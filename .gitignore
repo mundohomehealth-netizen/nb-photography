@@ -1,0 +1,17 @@
+# Full-quality render output — regenerable from NB_album.blend via run_render.bat.
+# The web-sized frames the site actually serves live in
+# nb-photography-site/frames/ and ARE tracked.
+/frames/
+/video/
+
+# Superseded standalone copy of the hero snippet
+/website/
+
+# Blender
+*.blend1
+*.blend2
+
+# OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini

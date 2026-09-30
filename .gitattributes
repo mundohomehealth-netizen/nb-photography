@@ -1,0 +1,7 @@
+# Never apply line-ending conversion to binary assets.
+*.webp binary
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.mp4  binary
+*.blend binary

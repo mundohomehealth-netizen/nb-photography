@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- EDIT: business name and location in the title and description -->
+  <title>NB Photography — Wedding Photographer, Toronto &amp; Destination</title>
+  <meta name="description" content="Warm, candid wedding photography for every ritual and celebration, from the haldi to the last dance, finished in handcrafted leather albums.">
+  <meta property="og:title" content="NB Photography — Wedding Photography">
+  <meta property="og:description" content="Warm, candid wedding photography, finished in handcrafted leather albums.">
+  <meta property="og:image" content="assets/img/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#b9aea0">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="frames/desktop/0001.webp" media="(min-width: 700px)">
+  <link rel="preload" as="image" href="frames/mobile/0001.webp" media="(max-width: 699px)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&family=La+Belle+Aurore&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" data-header>
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="NB Photography, back to top">
+        <span class="brand-mark" aria-hidden="true">NB</span>
+        <span class="brand-name">NB Photography</span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="sr-only">Menu</span><span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
+      <nav class="site-nav" id="site-nav" data-nav>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#about">About</a>
+        <a href="#packages">Packages</a>
+        <a class="btn btn-small" href="#contact">Check your date</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ HERO: scroll-driven album ============ -->
+  <section class="nb-hero" id="top" data-nb-hero data-frames-path="frames/" data-frame-count="248">
+    <div class="nb-hero__sticky">
+      <canvas class="nb-hero__canvas" role="img"
+        aria-label="A brown leather wedding album embossed with NB opens and turns through six wedding photographs"></canvas>
+      <div class="nb-hero__intro">
+        <!-- EDIT: location line -->
+        <p class="eyebrow">Wedding photography · Toronto &amp; destination</p>
+        <p class="hero-title">Wedding stories, bound to last</p>
+        <p class="hand hero-hint">scroll to open the album</p>
+        <span class="scroll-line" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <main id="main">
+
+    <!-- ============ INTRO ============ -->
+    <section class="section intro">
+      <div class="container narrow center">
+        <p class="hand kicker">for the pages you'll turn back to</p>
+        <h1>Wedding photography with the warmth of a family album</h1>
+        <p class="lede">From the first turmeric-stained laugh at the haldi to the last petal at the ceremony, we photograph your celebration the way it felt: candid, colourful and full of the people who love you. Then we bind it into something you can hold.</p>
+        <div class="actions">
+          <a class="btn" href="#portfolio">View the portfolio</a>
+          <a class="btn btn-ghost" href="#contact">Check your date</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PORTFOLIO ============ -->
+    <section class="section portfolio" id="portfolio">
+      <div class="container">
+        <div class="section-head">
+          <p class="hand kicker">selected work</p>
+          <h2>Portfolio</h2>
+        </div>
+        <div class="filters" role="group" aria-label="Filter photographs">
+          <button class="filter is-active" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter" data-filter="ceremony" aria-pressed="false">Ceremonies</button>
+          <button class="filter" data-filter="portrait" aria-pressed="false">Portraits</button>
+          <button class="filter" data-filter="couple" aria-pressed="false">Couples</button>
+          <button class="filter" data-filter="celebration" aria-pressed="false">Celebrations</button>
+        </div>
+
+        <!-- To add a photo: copy one <figure> block, change the file names, alt text, caption and data-category -->
+        <div class="gallery" data-gallery>
+          <figure class="shot" data-category="ceremony">
+            <button class="shot-btn" data-full="assets/img/portfolio/ceremony-petals-2400.webp">
+              <img src="assets/img/portfolio/ceremony-petals-800.webp"
+                   srcset="assets/img/portfolio/ceremony-petals-800.webp 800w, assets/img/portfolio/ceremony-petals-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="640" loading="lazy"
+                   alt="Bride with eyes closed and hands pressed together as rose petals fall during the wedding ceremony">
+            </button>
+            <figcaption><span class="cat">Ceremony</span>Petals, prayers and a thousand blessings</figcaption>
+          </figure>
+          <figure class="shot" data-category="couple">
+            <button class="shot-btn" data-full="assets/img/portfolio/couple-laughter-2400.webp">
+              <img src="assets/img/portfolio/couple-laughter-800.webp"
+                   srcset="assets/img/portfolio/couple-laughter-800.webp 800w, assets/img/portfolio/couple-laughter-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="533" loading="lazy"
+                   alt="Groom in a cream turban laughing as the bride leans on his shoulder among white flowers">
+            </button>
+            <figcaption><span class="cat">Couple</span>The laughter in between the rituals</figcaption>
+          </figure>
+          <figure class="shot" data-category="portrait">
+            <button class="shot-btn" data-full="assets/img/portfolio/bride-golden-light-2400.webp">
+              <img src="assets/img/portfolio/bride-golden-light-800.webp"
+                   srcset="assets/img/portfolio/bride-golden-light-800.webp 800w, assets/img/portfolio/bride-golden-light-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="1000" loading="lazy"
+                   alt="Bride in a cream and copper silk saree touching her forehead, lit by warm golden light">
+            </button>
+            <figcaption><span class="cat">Portrait</span>Golden light, quiet grace</figcaption>
+          </figure>
+          <figure class="shot" data-category="portrait">
+            <button class="shot-btn" data-full="assets/img/portfolio/bride-veil-bw-2400.webp">
+              <img src="assets/img/portfolio/bride-veil-bw-800.webp"
+                   srcset="assets/img/portfolio/bride-veil-bw-800.webp 800w, assets/img/portfolio/bride-veil-bw-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="1000" loading="lazy"
+                   alt="Black-and-white profile of a bride wearing an embroidered veil and forehead jewellery">
+            </button>
+            <figcaption><span class="cat">Portrait</span>A still moment before forever</figcaption>
+          </figure>
+          <figure class="shot" data-category="couple">
+            <button class="shot-btn" data-full="assets/img/portfolio/engagement-beach-2400.webp">
+              <img src="assets/img/portfolio/engagement-beach-800.webp"
+                   srcset="assets/img/portfolio/engagement-beach-800.webp 800w, assets/img/portfolio/engagement-beach-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="533" loading="lazy"
+                   alt="Couple in a mustard saree and maroon kurta walking hand in hand on a beach at sunset">
+            </button>
+            <figcaption><span class="cat">Engagement</span>Barefoot at sunset, hand in hand</figcaption>
+          </figure>
+          <figure class="shot" data-category="celebration">
+            <button class="shot-btn" data-full="assets/img/portfolio/haldi-marigolds-2400.webp">
+              <img src="assets/img/portfolio/haldi-marigolds-800.webp"
+                   srcset="assets/img/portfolio/haldi-marigolds-800.webp 800w, assets/img/portfolio/haldi-marigolds-1600.webp 1600w"
+                   sizes="(max-width: 640px) 100vw, (max-width: 1000px) 50vw, 33vw" width="800" height="493" loading="lazy"
+                   alt="Couple showered with marigold petals by their family during a haldi celebration">
+            </button>
+            <figcaption><span class="cat">Haldi</span>Showered in marigolds and pure joy</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <!-- EDIT: replace the photo with one of yourself if you like, and make the story your own -->
+    <section class="section about" id="about">
+      <div class="container about-grid">
+        <div class="about-media">
+          <img src="assets/img/portfolio/bride-golden-light-800.webp"
+               srcset="assets/img/portfolio/bride-golden-light-800.webp 800w, assets/img/portfolio/bride-golden-light-1600.webp 1600w"
+               sizes="(max-width: 860px) 90vw, 40vw" width="800" height="1000" loading="lazy"
+               alt="Bride in warm golden light, lifting her hand to her forehead">
+        </div>
+        <div class="about-copy">
+          <p class="hand kicker">about</p>
+          <h2>Hello, we're NB</h2>
+          <p>We photograph weddings the way you'll want to remember them: honestly, warmly, and with room for every generation in the frame. Most of what we do is quiet observation, waiting for the laugh between rituals and the look a parent gives when no one is watching.</p>
+          <p>We know the rhythm of multi-day celebrations, from the haldi and mehndi to the ceremony and the reception, so you can stay in the moment while we take care of the story.</p>
+          <ul class="values">
+            <li><strong>Documentary first.</strong> Real moments, lightly guided portraits.</li>
+            <li><strong>Every ritual, every generation.</strong> The details your family will ask about.</li>
+            <li><strong>Made to be held.</strong> Handcrafted leather albums, designed by us.</li>
+          </ul>
+          <p class="hand signature">with love, NB</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PACKAGES ============ -->
+    <!-- EDIT: the prices and inclusions below are placeholders -->
+    <section class="section packages" id="packages">
+      <div class="container">
+        <div class="section-head center">
+          <p class="hand kicker">collections</p>
+          <h2>Packages</h2>
+          <p class="section-sub">Every celebration is different, so each collection can be tailored. Here's where most couples start.</p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h3>The Ceremony</h3>
+            <p class="price">From $3,200</p>
+            <ul>
+              <li>Up to 6 hours of coverage</li>
+              <li>One lead photographer</li>
+              <li>Private online gallery</li>
+              <li>Print release</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact" data-package="The Ceremony">Enquire</a>
+          </article>
+          <article class="card">
+            <h3>The Celebration</h3>
+            <p class="price">From $4,800</p>
+            <ul>
+              <li>Up to 10 hours of coverage</li>
+              <li>Two photographers</li>
+              <li>Engagement session</li>
+              <li>Private online gallery and print release</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact" data-package="The Celebration">Enquire</a>
+          </article>
+          <article class="card card-feature">
+            <p class="badge">Includes the album</p>
+            <h3>The Heirloom</h3>
+            <p class="price">From $6,900</p>
+            <ul>
+              <li>Multi-day coverage, haldi to reception</li>
+              <li>Two photographers</li>
+              <li>Engagement session</li>
+              <li>Handcrafted leather album with monogram</li>
+            </ul>
+            <a class="btn" href="#contact" data-package="The Heirloom">Enquire</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="section contact" id="contact">
+      <div class="container contact-grid">
+        <div class="contact-copy">
+          <p class="hand kicker">say hello</p>
+          <h2>Check your date</h2>
+          <p>Tell us a little about your celebration and we'll reply with availability and a tailored quote.</p>
+          <!-- EDIT: your email and Instagram -->
+          <ul class="contact-list">
+            <li><span>Email</span><a href="mailto:hello@yourdomain.com">hello@yourdomain.com</a></li>
+            <li><span>Instagram</span><a href="https://instagram.com/yourhandle" rel="noopener">@yourhandle</a></li>
+          </ul>
+        </div>
+
+        <!-- Netlify Forms: submissions appear in your Netlify dashboard under Forms -->
+        <form class="inquiry" name="inquiry" method="POST" action="/thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
+          <input type="hidden" name="form-name" value="inquiry">
+          <p class="hidden-field"><label>Leave this empty <input name="bot-field"></label></p>
+          <div class="field-row">
+            <label class="field"><span>Your names</span><input name="names" autocomplete="name" required></label>
+            <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" required></label>
+          </div>
+          <div class="field-row">
+            <label class="field"><span>Phone <em>(optional)</em></span><input type="tel" name="phone" autocomplete="tel"></label>
+            <label class="field"><span>Wedding date</span><input type="date" name="wedding-date"></label>
+          </div>
+          <div class="field-row">
+            <label class="field"><span>Venue or city</span><input name="venue"></label>
+            <label class="field"><span>Collection</span>
+              <select name="package" data-package-select>
+                <option value="">Not sure yet</option>
+                <option>The Ceremony</option>
+                <option>The Celebration</option>
+                <option>The Heirloom</option>
+              </select>
+            </label>
+          </div>
+          <label class="field"><span>Tell us about your celebration</span><textarea name="message" rows="5" placeholder="Events, guest count, what matters most to you..."></textarea></label>
+          <button class="btn" type="submit">Send inquiry</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="brand-mark brand-mark-light" aria-hidden="true">NB</span>
+      <nav aria-label="Footer">
+        <a href="#portfolio">Portfolio</a><a href="#about">About</a><a href="#packages">Packages</a><a href="#contact">Contact</a>
+      </nav>
+      <p>&copy; <span data-year>2026</span> NB Photography</p>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <dialog class="lightbox" data-lightbox aria-label="Photo viewer">
+    <button class="lb-close" data-lb-close aria-label="Close">&times;</button>
+    <button class="lb-nav lb-prev" data-lb-prev aria-label="Previous photo">&#8249;</button>
+    <figure>
+      <img data-lb-img alt="">
+      <figcaption data-lb-cap></figcaption>
+    </figure>
+    <button class="lb-nav lb-next" data-lb-next aria-label="Next photo">&#8250;</button>
+  </dialog>
+
+  <script src="assets/js/album.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
