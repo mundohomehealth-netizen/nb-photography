@@ -1,19 +1,28 @@
 /* ===== NB Photography ===== */
 :root {
-  --table: #b9aea0;        /* matches the surface in the album animation */
-  --paper: #f4eee3;
-  --paper-2: #ebe3d4;
+  /* Warm apricot page, near-black ink, with the three book colours as accents. */
+  --paper: #f3dfc8;
+  --paper-2: #ecd2b4;
+  --table: #f3dfc8;        /* the album frames now sit straight on the page */
+  --ink: #14110f;
+  --muted: #6b5a4b;
+  --terracotta: #c4562a;   /* the orange book */
+  --olive: #7d7b4f;        /* the olive book */
+  --cream: #e9dac2;        /* the cream book */
   --leather: #5a3826;
   --leather-dark: #3a2418;
-  --ink: #2e211a;
-  --muted: #6c5b4f;
   --brass: #a8823f;
-  --line: rgba(46, 33, 26, 0.16);
+  --line: rgba(20, 17, 15, 0.14);
+
+  --display: "Playfair Display", Georgia, "Times New Roman", serif;
   --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --sans: "Jost", "Segoe UI", system-ui, sans-serif;
+  --script: "Parisienne", "Segoe Script", cursive;
   --hand: "La Belle Aurore", "Segoe Script", cursive;
+
   --radius: 4px;
-  --header-h: 72px;
+  --header-h: 76px;
+  --book-h: 46vh;          /* shared height basis for the three books */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -74,45 +83,100 @@ p { margin: 0 0 1.1em; }
   position: fixed; inset: 0 0 auto; z-index: 50; height: var(--header-h);
   transition: background 0.3s, box-shadow 0.3s;
 }
-.site-header.is-solid { background: rgba(244, 238, 227, 0.94); box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(8px); }
+.site-header.is-solid { background: rgba(243, 223, 200, 0.94); box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(8px); }
 .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand-mark {
-  display: grid; place-items: center; width: 42px; height: 42px;
-  border: 1px solid var(--leather); border-radius: 50%;
-  font: 600 1.05rem/1 var(--serif); letter-spacing: -0.04em; color: var(--leather);
+  display: grid; place-items: center; width: 44px; height: 44px;
+  border: 1px solid var(--ink); border-radius: 50%;
+  font: 700 1.1rem/1 var(--display); letter-spacing: -0.04em; color: var(--ink);
 }
 .brand-mark-light { border-color: var(--brass); color: var(--paper); }
 .brand-name { font: 500 1.3rem/1 var(--serif); letter-spacing: 0.02em; }
 .site-nav { display: flex; align-items: center; gap: 28px; }
-.site-nav a:not(.btn) { text-decoration: none; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+.site-nav a:not(.btn) { text-decoration: none; font-size: 0.95rem; font-weight: 400; letter-spacing: 0.01em; text-transform: lowercase; }
 .site-nav a:not(.btn):hover { color: var(--leather); }
 .nav-toggle { display: none; }
 
-/* ----- hero ----- */
-.nb-hero { position: relative; height: 400vh; background: var(--table); --nb-p: 0; }
-.nb-hero__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.nb-hero__canvas { display: block; width: 100%; height: 100%; }
+/* ----- hero: wordmark + three books, middle one animated ----- */
+.nb-hero {
+  position: relative;
+  height: 400vh;
+  background: var(--paper);
+  --nb-p: 0;
+  /* how far through the scroll each stage finishes */
+  --part: clamp(0, calc(var(--nb-p) / 0.05), 1);   /* outer books leave */
+  --wordfade: clamp(0, calc(var(--nb-p) / 0.08), 1);
+}
+.nb-hero__sticky {
+  position: sticky; top: 0;
+  height: 100vh; height: 100svh;
+  overflow: hidden;
+}
+.nb-hero__stage { position: absolute; inset: 0; display: grid; place-items: center; }
+
+/* the wordmark sits behind the books */
+.wordmark {
+  position: absolute; z-index: 1; margin: 0;
+  width: 100%; text-align: center;
+  font-family: var(--display); font-weight: 700;
+  line-height: 0.9; letter-spacing: -0.02em; color: var(--ink);
+  opacity: calc(1 - var(--wordfade));
+  transform: translateY(calc(var(--wordfade) * -3vh));
+  pointer-events: none;
+  transition: opacity 0.08s linear;
+}
+.wordmark__main { display: block; font-size: clamp(3.4rem, 15vw, 13rem); }
+.wordmark__script {
+  position: absolute; right: 8vw; top: 46%;
+  font-family: var(--script); font-weight: 400;
+  font-size: clamp(1.6rem, 5.2vw, 4.6rem);
+  letter-spacing: 0.01em; line-height: 1;
+}
+
+/* the row of three books */
+.books {
+  position: relative; z-index: 2;
+  display: grid; place-items: center;
+  width: 100%; height: 100%;
+}
+.book-side {
+  position: absolute; top: 50%; z-index: 2;
+  width: calc(var(--book-h) * 0.78); height: var(--book-h);
+  background-repeat: no-repeat; background-position: center; background-size: contain;
+  opacity: calc(1 - var(--part));
+  pointer-events: none;
+}
+.book-side--left {
+  left: 50%;
+  transform: translate(calc(-50% - var(--book-h) * 0.56 - var(--part) * 42vw), -50%)
+             scale(calc(1 - var(--part) * 0.12));
+  background-image: url("../img/book-left.webp");
+}
+.book-side--right {
+  left: 50%;
+  transform: translate(calc(-50% + var(--book-h) * 0.56 + var(--part) * 42vw), -50%)
+             scale(calc(1 - var(--part) * 0.12));
+  background-image: url("../img/book-right.webp");
+}
+/* the animated album is drawn on a full-bleed canvas; album.js sizes the book inside it */
+.nb-hero__canvas { position: absolute; inset: 0; z-index: 3; display: block; width: 100%; height: 100%; }
+
 .nb-hero__intro {
-  position: absolute; left: 0; right: 0; bottom: 5vh;
+  position: absolute; left: 0; right: 0; bottom: 4vh; z-index: 4;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   text-align: center; padding: 0 16px; color: var(--ink);
   opacity: calc(1 - var(--nb-p) * 14);
   pointer-events: none;
 }
-.hero-title { font: 500 clamp(1.7rem, 2.4vw, 2.5rem)/1.1 var(--serif); margin: 4px 0 0; }
-.hero-hint { font-size: 1.35rem; margin: 0; color: var(--leather-dark); }
-/* Wide screens: the closed book fills the centre, so the intro sits in the left margin */
-@media (min-aspect-ratio: 3/2) and (min-width: 900px) {
-  .nb-hero__intro {
-    right: auto; left: 3.5vw; bottom: 12vh; width: 17vw;
-    align-items: flex-start; text-align: left; padding: 0;
-  }
-  .nb-hero__intro .eyebrow { line-height: 1.8; }
-  .scroll-line { margin-left: 2px; }
-}
+.hero-hint { font-family: var(--script); font-size: clamp(1.1rem, 2vw, 1.6rem); margin: 0; color: var(--leather-dark); }
 .scroll-line { width: 1px; height: 44px; background: linear-gradient(var(--leather), transparent); animation: drip 2.2s ease-in-out infinite; transform-origin: top; }
 @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-line { animation: none; }
+}
+
 
 /* ----- sections ----- */
 .section { padding: clamp(72px, 11vw, 140px) 0; }

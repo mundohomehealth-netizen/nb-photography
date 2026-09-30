@@ -16,7 +16,7 @@
   <link rel="preload" as="image" href="frames/mobile/0001.webp" media="(max-width: 699px)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&family=La+Belle+Aurore&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&family=Parisienne&family=La+Belle+Aurore&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -25,32 +25,37 @@
   <!-- ============ HEADER ============ -->
   <header class="site-header" data-header>
     <div class="container header-inner">
-      <a class="brand" href="#top" aria-label="NB Photography, back to top">
+      <a class="brand" href="#top" aria-label="narrated by nb, back to top">
         <span class="brand-mark" aria-hidden="true">NB</span>
-        <span class="brand-name">NB Photography</span>
       </a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
         <span class="sr-only">Menu</span><span class="nav-toggle-bars" aria-hidden="true"></span>
       </button>
       <nav class="site-nav" id="site-nav" data-nav>
-        <a href="#portfolio">Portfolio</a>
-        <a href="#about">About</a>
-        <a href="#packages">Packages</a>
-        <a class="btn btn-small" href="#contact">Check your date</a>
+        <a href="#top">home</a>
+        <a href="#portfolio">gallery</a>
+        <a href="#contact">contact us</a>
       </nav>
     </div>
   </header>
 
-  <!-- ============ HERO: scroll-driven album ============ -->
-  <section class="nb-hero" id="top" data-nb-hero data-frames-path="frames/" data-frame-count="248">
+  <!-- ============ HERO: wordmark + three books, middle one animated ============ -->
+  <section class="nb-hero" id="top" data-nb-hero data-frames-path="frames/" data-frame-count="248" data-frames-alpha="false">
     <div class="nb-hero__sticky">
-      <canvas class="nb-hero__canvas" role="img"
-        aria-label="A brown leather wedding album embossed with NB opens and turns through six wedding photographs"></canvas>
+      <div class="nb-hero__stage">
+        <h1 class="wordmark">
+          <span class="wordmark__main">narrated</span>
+          <span class="wordmark__script">by nb</span>
+        </h1>
+        <div class="books">
+          <div class="book-side book-side--left" aria-hidden="true"></div>
+          <div class="book-side book-side--right" aria-hidden="true"></div>
+          <canvas class="nb-hero__canvas" role="img"
+            aria-label="A leather wedding album embossed with NB opens and turns through six wedding photographs"></canvas>
+        </div>
+      </div>
       <div class="nb-hero__intro">
-        <!-- EDIT: location line -->
-        <p class="eyebrow">Wedding photography · Toronto &amp; destination</p>
-        <p class="hero-title">Wedding stories, bound to last</p>
-        <p class="hand hero-hint">scroll to open the album</p>
+        <p class="hero-hint">scroll to open the album</p>
         <span class="scroll-line" aria-hidden="true"></span>
       </div>
     </div>

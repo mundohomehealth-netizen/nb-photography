@@ -1,25 +1,34 @@
 /* NB album - scroll-driven hero (no libraries needed)
-   Scrolling down plays the frames forward; scrolling up plays them backward. */
+   Scrolling down plays the frames forward; scrolling up plays them backward.
+
+   The hero opens as three books side by side. The middle one is this canvas.
+   As you scroll, the two outer books slide away (CSS, driven by --nb-p) while
+   the album here grows from book-size to filling the screen, then opens. */
 (function () {
   var section = document.querySelector("[data-nb-hero]");
   if (!section) return;
 
   var FRAME_COUNT = parseInt(section.getAttribute("data-frame-count") || "248", 10);
   var BASE = section.getAttribute("data-frames-path") || "frames/";   // folder that holds desktop/ and mobile/
+  // Set to "true" once the frames are re-rendered with a transparent background.
+  var ALPHA = section.getAttribute("data-frames-alpha") === "true";
   var BG = getComputedStyle(section).getPropertyValue("--nb-bg").trim() || "#b9aea0";
   var small = Math.min(window.screen.width, window.screen.height) < 700;
   var DIR = BASE.replace(/\/?$/, "/") + (small ? "mobile/" : "desktop/");
   var IMG_W = small ? 960 : 1600, IMG_H = small ? 540 : 900;
 
+  // The closed book occupies roughly this much of the frame's height. Used to
+  // match the canvas book to the height of the two CSS books beside it.
+  var BOOK_FRAC_H = 0.83;
+  // Scroll fraction over which the album grows from book-size to full-bleed.
+  var GROW_UNTIL = 0.18;
+
   var canvas = section.querySelector("canvas");
   var ctx = canvas.getContext("2d");
-  ctx.fillStyle = BG;                                   // normalise the colour to #rrggbb
-  // one-pixel-tall strips of the table colour, used to extend the frame on tall screens
-  function strip() { var c = document.createElement("canvas"); c.width = 48; c.height = 1; return c; }
-  var topStrip = strip(), bottomStrip = strip(), edgeReady = false;
   var frames = new Array(FRAME_COUNT);
   var ready = new Array(FRAME_COUNT);
-  var current = 0, target = 0, drawn = -1, rafId = 0;
+  var current = 0, target = 0, drawn = -1, drawnT = -1, rafId = 0;
+  var p = 0;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function src(i) { return DIR + String(i + 1).padStart(4, "0") + ".webp"; }
@@ -58,35 +67,49 @@
     return -1;
   }
 
+  function dpr() { return Math.min(window.devicePixelRatio || 1, 2); }
+
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(canvas.clientWidth * dpr);
-    canvas.height = Math.round(canvas.clientHeight * dpr);
+    canvas.width = Math.round(canvas.clientWidth * dpr());
+    canvas.height = Math.round(canvas.clientHeight * dpr());
     drawn = -1;
     requestTick();
   }
 
-  function draw(i) {
+  /* Height in canvas pixels that one book should occupy, from the shared
+     --book-h token that also sizes the two CSS books. */
+  function bookPx() {
+    var v = getComputedStyle(section).getPropertyValue("--book-h").trim();
+    var n = parseFloat(v) || 46;
+    var px = /vh$/.test(v) ? window.innerHeight * n / 100 : n;
+    return px * dpr();
+  }
+
+  function smoothstep(t) { return t * t * (3 - 2 * t); }
+
+  function draw(i, t) {
     var img = frames[i];
     var cw = canvas.width, ch = canvas.height;
-    // Wide screens: fill edge to edge. Tall screens (phones): fit the whole book.
+
+    // Full-bleed size: wide screens fill edge to edge, tall screens fit the book.
     var cover = cw / ch >= 1.5;
-    var s = cover ? Math.max(cw / IMG_W, ch / IMG_H) : Math.min(cw / IMG_W, ch / IMG_H);
-    var w = IMG_W * s, h = IMG_H * s, x = (cw - w) / 2, y = (ch - h) / 2;
-    ctx.fillStyle = BG;
-    ctx.fillRect(0, 0, cw, ch);
-    ctx.drawImage(img, x, y, w, h);
-    if (y > 1) {
-      // Phones: extend the table surface above and below the frame by stretching a
-      // softened copy of the frame's top and bottom rows, so there is no visible seam.
-      if (!edgeReady && ready[0]) {                     // sample the plain table from the first frame
-        topStrip.getContext("2d").drawImage(frames[0], 0, 0, IMG_W, 3, 0, 0, 48, 1);
-        bottomStrip.getContext("2d").drawImage(frames[0], 0, IMG_H - 3, IMG_W, 3, 0, 0, 48, 1);
-        edgeReady = true;
-      }
-      ctx.drawImage(topStrip, x, 0, w, y + 1);
-      ctx.drawImage(bottomStrip, x, y + h - 1, w, ch - (y + h) + 1);
+    var fullS = cover ? Math.max(cw / IMG_W, ch / IMG_H) : Math.min(cw / IMG_W, ch / IMG_H);
+    var fullH = IMG_H * fullS;
+    // Book-in-a-row size at the very top of the page.
+    var smallH = bookPx() / BOOK_FRAC_H;
+
+    var h = smallH + (fullH - smallH) * t;
+    var s = h / IMG_H, w = IMG_W * s;
+    var x = (cw - w) / 2, y = (ch - h) / 2;
+
+    ctx.clearRect(0, 0, cw, ch);
+    // Opaque frames still carry their own backdrop; only paint it once the frame
+    // actually covers the canvas, so the page colour shows through beforehand.
+    if (!ALPHA && t > 0.995 && cover) {
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, cw, ch);
     }
+    ctx.drawImage(img, x, y, w, h);
   }
 
   function progress() {
@@ -98,19 +121,24 @@
 
   function tick() {
     rafId = 0;
-    var p = progress();
-    section.style.setProperty("--nb-p", p.toFixed(4));   // lets CSS fade the intro text
+    p = progress();
+    section.style.setProperty("--nb-p", p.toFixed(4));   // drives the CSS: books part, wordmark fades
     target = p * (FRAME_COUNT - 1);
     current += (target - current) * 0.25;            // gentle easing between scroll steps
     if (Math.abs(target - current) < 0.3) current = target;
+
+    var t = smoothstep(Math.min(1, p / GROW_UNTIL));
     var want = nearestReady(Math.round(current));
-    if (want >= 0 && want !== drawn) { draw(want); drawn = want; }
+    if (want >= 0 && (want !== drawn || Math.abs(t - drawnT) > 0.001)) {
+      draw(want, t);
+      drawn = want; drawnT = t;
+    }
     if (current !== target) requestTick();
   }
   function requestTick() { if (!rafId) rafId = requestAnimationFrame(tick); }
 
   window.addEventListener("scroll", requestTick, { passive: true });
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", function () { resize(); });
   if (reduce) { current = target = FRAME_COUNT - 1; }
   preload();
   if (reduce) load(FRAME_COUNT - 1);
