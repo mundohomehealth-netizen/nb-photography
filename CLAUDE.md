@@ -25,7 +25,9 @@ Owner is not a developer: explain changes in plain language and keep the site de
 The landing view is three square albums in a row behind a large `narrated` wordmark, with
 `by nb` in script to its right. The middle album is the animated one, drawn on a full-bleed
 canvas; the outer two are static WebPs (`assets/img/book-left.webp`, `book-right.webp`),
-recoloured copies of the same model in cream and terracotta.
+recoloured copies of the same model in cream and terracotta, rendered plain: the front cover
+is swapped to the monogram-free `Leather` material and `Corner_TR`/`Corner_BR` are hidden, so
+only the middle album carries the NB emboss and brass corners.
 
 Scrolling drives `--nb-p` (0-1) on the hero, and everything keys off it:
 - 0 to 0.05: the outer two books slide outward and fade, clearing before the cover starts
