@@ -1,4 +1,4 @@
-# NB Album Animation + narrated by nb website
+# NB Album Animation + NB Photography website
 
 Wedding photography site whose hero is a scroll-driven 3D leather album (rendered in Blender).
 Owner is not a developer: explain changes in plain language and keep the site dependency-free.
@@ -21,41 +21,6 @@ Owner is not a developer: explain changes in plain language and keep the site de
 - `frames/` — full-quality JPEG render (frame_0001–0248.jpg). `video/NB_album_scroll.mp4` (all-intra, 24 fps).
 - `run_render.bat` / `encode_mp4.py` — background render of all frames, then MP4 encode.
 
-## Hero composition (the homepage)
-The landing view is three square albums in a row behind a large `narrated` wordmark, with
-`by nb` in script to its right. The middle album is the animated one, drawn on a full-bleed
-canvas; the outer two are static WebPs (`assets/img/book-left.webp`, `book-right.webp`),
-recoloured copies of the same model in cream and terracotta, rendered plain: the front cover
-is swapped to the monogram-free `Leather` material and `Corner_TR`/`Corner_BR` are hidden, so
-only the middle album carries the NB emboss and brass corners.
-
-Scrolling drives `--nb-p` (0-1) on the hero, and everything keys off it:
-- 0 to 0.05: the outer two books slide outward and fade, clearing before the cover starts
-  opening at frame 10 (p = 0.036).
-- 0 to 0.08: the wordmark fades.
-- 0 to 0.18: the album grows from book-size to full-bleed (`GROW_UNTIL` in album.js).
-
-All three books share the `--book-h` token. album.js **measures** it off the `.album-shadow`
-element rather than parsing the custom property, because it is a `min()` expression that
-`parseFloat` cannot resolve - parsing it silently yielded a 46px album.
-
-Under 700px wide the outer books are hidden and the album takes 62% of the screen width;
-three square albums cannot share a phone row.
-
-## Frames are transparent
-The frames the site serves carry an alpha channel, so the album sits straight on the apricot
-page. Re-render them with `render_web_frames.py` (run inside Blender), then
-`node convert_frames.js frames_web nb-photography-site`. Do not re-run `build_book.py` for
-this - it rebuilds the scene and discards the hand-made lighting and leather tweaks.
-
-Two traps:
-- Blender's WebP writer drops alpha. Render PNG RGBA and convert outside Blender.
-- EEVEE has no shadow catcher, so the contact shadow cannot be baked in; it is drawn in CSS
-  (`.book-side::after, .album-shadow`). `Table.is_shadow_catcher` is a Cycles-only flag and
-  does nothing here.
-
-`data-frames-alpha` on the hero section tells album.js whether the frames have alpha. It must
-stay `true` while the transparent frames are in place.
 ## Animation facts
 - 248 frames @ 24 fps: closed 1–10, cover opens 10–50, then 5 page turns of 32 frames with 6-frame holds
   (56–88, 94–126, 132–164, 170–202, 208–240). Straight top-down camera, 1920×1080.
@@ -72,7 +37,7 @@ stay `true` while the transparent frames are in place.
 5 Barefoot at sunset, hand in hand — engagement-beach · 6 Showered in marigolds and pure joy — haldi-marigolds
 
 ## Still placeholders (search `EDIT:` in index.html)
-Location "Toronto & destination", About copy, package prices ($3,200 / $4,800 / $6,900)
+Business name "NB Photography", location "Toronto & destination", About copy, package prices ($3,200 / $4,800 / $6,900)
 and inclusions, email `hello@yourdomain.com`, Instagram `@yourhandle`.
 
 ## Deploying
