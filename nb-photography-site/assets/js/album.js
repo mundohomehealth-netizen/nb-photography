@@ -19,7 +19,7 @@
 
   // The closed book occupies roughly this much of the frame's height. Used to
   // match the canvas book to the height of the two CSS books beside it.
-  var BOOK_FRAC_H = 0.83;
+  var BOOK_FRAC_H = 0.804;   // 724px of the 900px frame
   // Scroll fraction over which the album grows from book-size to full-bleed.
   var GROW_UNTIL = 0.18;
 
@@ -76,13 +76,14 @@
     requestTick();
   }
 
-  /* Height in canvas pixels that one book should occupy, from the shared
-     --book-h token that also sizes the two CSS books. */
+  /* Height in canvas pixels that one book should occupy. Measured off a real
+     element rather than parsed from --book-h, because that token is a min()
+     expression that no amount of parseFloat will resolve correctly. */
+  var sizer = section.querySelector(".album-shadow");
   function bookPx() {
-    var v = getComputedStyle(section).getPropertyValue("--book-h").trim();
-    var n = parseFloat(v) || 46;
-    var px = /vh$/.test(v) ? window.innerHeight * n / 100 : n;
-    return px * dpr();
+    var h = sizer ? sizer.getBoundingClientRect().height : 0;
+    if (!h) h = window.innerHeight * 0.3;      // same intent as the CSS fallback
+    return h * dpr();
   }
 
   function smoothstep(t) { return t * t * (3 - 2 * t); }

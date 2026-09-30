@@ -22,7 +22,7 @@
 
   --radius: 4px;
   --header-h: 76px;
-  --book-h: 46vh;          /* shared height basis for the three books */
+  --book-h: min(30vh, 16vw);   /* shared size basis for the three books (the album renders square) */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -122,13 +122,13 @@ p { margin: 0 0 1.1em; }
   font-family: var(--display); font-weight: 700;
   line-height: 0.9; letter-spacing: -0.02em; color: var(--ink);
   opacity: calc(1 - var(--wordfade));
-  transform: translateY(calc(var(--wordfade) * -3vh));
+  transform: translateY(calc(-11vh - var(--wordfade) * 3vh));
   pointer-events: none;
   transition: opacity 0.08s linear;
 }
 .wordmark__main { display: block; font-size: clamp(3.4rem, 15vw, 13rem); }
 .wordmark__script {
-  position: absolute; right: 8vw; top: 46%;
+  position: absolute; right: 6vw; top: 34%;
   font-family: var(--script); font-weight: 400;
   font-size: clamp(1.6rem, 5.2vw, 4.6rem);
   letter-spacing: 0.01em; line-height: 1;
@@ -142,20 +142,41 @@ p { margin: 0 0 1.1em; }
 }
 .book-side {
   position: absolute; top: 50%; z-index: 2;
-  width: calc(var(--book-h) * 0.78); height: var(--book-h);
+  width: var(--book-h); height: var(--book-h);   /* the album renders square */
   background-repeat: no-repeat; background-position: center; background-size: contain;
   opacity: calc(1 - var(--part));
   pointer-events: none;
 }
+/* soft contact shadow: EEVEE cannot catch shadows onto a transparent film,
+   so the one the render used to carry is rebuilt here instead */
+.book-side::after, .album-shadow {
+  content: ""; position: absolute; left: 50%; bottom: -3.2%;
+  width: 86%; height: 7%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(60, 38, 22, 0.36), rgba(60, 38, 22, 0) 70%);
+  pointer-events: none;
+}
+.album-shadow {
+  position: absolute; top: 50%; left: 50%; z-index: 2;
+  width: var(--book-h); height: var(--book-h);
+  transform: translate(-50%, -50%);
+  background: none;
+  opacity: calc(1 - clamp(0, calc(var(--nb-p) / 0.09), 1));
+}
+.album-shadow::after {
+  content: ""; position: absolute; left: 50%; bottom: -3.2%;
+  width: 86%; height: 7%; transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(60, 38, 22, 0.36), rgba(60, 38, 22, 0) 70%);
+}
 .book-side--left {
   left: 50%;
-  transform: translate(calc(-50% - var(--book-h) * 0.56 - var(--part) * 42vw), -50%)
+  transform: translate(calc(-50% - var(--book-h) * 0.86 - var(--part) * 42vw), -50%)
              scale(calc(1 - var(--part) * 0.12));
   background-image: url("../img/book-left.webp");
 }
 .book-side--right {
   left: 50%;
-  transform: translate(calc(-50% + var(--book-h) * 0.56 + var(--part) * 42vw), -50%)
+  transform: translate(calc(-50% + var(--book-h) * 0.86 + var(--part) * 42vw), -50%)
              scale(calc(1 - var(--part) * 0.12));
   background-image: url("../img/book-right.webp");
 }
@@ -176,6 +197,21 @@ p { margin: 0 0 1.1em; }
 @media (prefers-reduced-motion: reduce) {
   .scroll-line { animation: none; }
 }
+/* Phones: three square albums cannot share a 375px row, so show only the
+   animated one and give it the space. The transparent frames make this
+   possible - there is no backdrop that has to be stretched to fit. */
+@media (max-width: 700px) {
+  .nb-hero { --book-h: min(46vh, 62vw); }
+  .book-side { display: none; }
+  .wordmark { transform: translateY(calc(-24vh - var(--wordfade) * 3vh)); }
+  .wordmark__main { font-size: clamp(2.6rem, 13vw, 13rem); }
+  .wordmark__script {
+    position: static; display: block;
+    margin-top: 0.15em; text-align: center;
+    font-size: clamp(1.4rem, 8vw, 3rem);
+  }
+}
+
 
 
 /* ----- sections ----- */

@@ -2,6 +2,7 @@
 # The web-sized frames the site actually serves live in
 # nb-photography-site/frames/ and ARE tracked.
 /frames/
+/frames_web/
 /video/
 
 # Superseded standalone copy of the hero snippet
