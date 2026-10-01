@@ -20,6 +20,7 @@ desktop.ini
 # The WebP the site serves (frames_web_v2/) IS tracked.
 /frames_v2/
 /frames_v3/
+/frames_v4/
 
 # pulled in locally for the sharp-based texture/frame scripts
 /node_modules/

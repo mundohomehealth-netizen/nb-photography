@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NB album v4 preview</title>
+<style>
+  :root { --bg: #f4eee3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font: 300 15px/1.6 "Jost", system-ui, sans-serif; color: #2e211a; }
+  .stage { position: relative; height: 560vh; }
+  .sticky { position: sticky; top: 0; height: 100vh; display: grid; place-items: center; }
+  canvas { display: block; width: min(92vw, 1100px); height: auto; }
+  .bar {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center; z-index: 10;
+    background: rgba(255,255,255,.82); backdrop-filter: blur(6px);
+    padding: 8px 14px; border-radius: 999px; box-shadow: 0 2px 14px rgba(0,0,0,.12);
+    font-size: 13px; letter-spacing: .02em;
+  }
+  .bar button { font: inherit; border: 1px solid #d8cdbb; background: #fff; border-radius: 999px; padding: 4px 11px; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: #2e211a; color: #fff; border-color: #2e211a; }
+  .hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); opacity: .55; font-size: 13px; }
+</style>
+</head>
+<body>
+  <p class="hint">scroll to open the album</p>
+  <div class="stage" id="stage">
+    <div class="sticky"><canvas id="c" width="1400" height="1050"></canvas></div>
+  </div>
+  <div class="bar">
+    <span>background</span>
+    <button data-bg="#f4eee3" aria-pressed="true">cream</button>
+    <button data-bg="#ffffff" aria-pressed="false">white</button>
+    <button data-bg="#f3dfc8" aria-pressed="false">apricot</button>
+    <button data-bg="#20201e" aria-pressed="false">dark</button>
+    <span id="n" style="opacity:.55;margin-left:6px"></span>
+  </div>
+<script>
+const COUNT = 292, DIR = "frames_web_v4/desktop/";
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const stage = document.getElementById("stage"), label = document.getElementById("n");
+const frames = new Array(COUNT), ready = new Array(COUNT);
+let drawn = -1, raf = 0;
+
+const src = i => DIR + String(i + 1).padStart(4, "0") + ".webp";
+function load(i) {
+  if (frames[i]) return;
+  const im = new Image();
+  im.decoding = "async";
+  im.onload = () => { ready[i] = true; drawn = -1; tick(); };
+  im.src = src(i);
+  frames[i] = im;
+}
+// coarse pass first so scrubbing always has something near to show
+(function preload(){
+  load(0);
+  const order = [];
+  for (const step of [8,4,2,1]) for (let i=0;i<COUNT;i+=step) order.push(i);
+  let k = 0;
+  (function next(){
+    for (let n=0; k<order.length && n<14; n++) load(order[k++]);
+    if (k < order.length) setTimeout(next, 25);
+  })();
+})();
+
+function nearest(i){
+  for (let d=0; d<COUNT; d++){
+    if (i-d >= 0 && ready[i-d]) return i-d;
+    if (i+d < COUNT && ready[i+d]) return i+d;
+  }
+  return -1;
+}
+function tick(){
+  raf = 0;
+  const total = stage.offsetHeight - innerHeight;
+  const p = Math.min(1, Math.max(0, -stage.getBoundingClientRect().top / total));
+  const want = nearest(Math.round(p * (COUNT - 1)));
+  if (want >= 0 && want !== drawn){
+    ctx.clearRect(0,0,cv.width,cv.height);          // transparent frames
+    ctx.drawImage(frames[want], 0, 0, cv.width, cv.height);
+    drawn = want;
+    label.textContent = "frame " + (want + 1) + " / " + COUNT;
+  }
+}
+const req = () => { if (!raf) raf = requestAnimationFrame(tick); };
+addEventListener("scroll", req, { passive: true });
+addEventListener("resize", req);
+document.querySelectorAll(".bar button").forEach(b => b.addEventListener("click", () => {
+  document.documentElement.style.setProperty("--bg", b.dataset.bg);
+  document.querySelectorAll(".bar button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+}));
+req();
+</script>
+</body>
+</html>
