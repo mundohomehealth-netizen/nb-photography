@@ -19,6 +19,7 @@ desktop.ini
 # v2 render output: 305MB of PNGs, regenerable from NB_album_v2.blend.
 # The WebP the site serves (frames_web_v2/) IS tracked.
 /frames_v2/
+/frames_v3/
 
 # pulled in locally for the sharp-based texture/frame scripts
 /node_modules/
