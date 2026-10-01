@@ -51,7 +51,7 @@ CW, CH = PW + SQUARE, PH + 2 * SQUARE
 
 N_LEAVES = 4
 SEG_X, SEG_Y = 76, 8
-GUTTER_DIP = 0.0065
+GUTTER_DIP = 0.0050
 DIP_FALLOFF = 0.090
 
 # --- the z ladder, built bottom-up so nothing has to be guessed -------------
@@ -60,7 +60,7 @@ Z_BACK_TOP = Z_BACK_BOT + BOARD_T
 Z_BLOCK_TOP = Z_BACK_TOP + BLOCK_H
 Z_FINAL_C = Z_BLOCK_TOP + LEAF_T / 2
 def z_leaf(i):                                   # i=0 is the topmost leaf
-    return Z_BLOCK_TOP + LEAF_T * (N_LEAVES - i - 0.5) + LEAF_T
+    return Z_BLOCK_TOP + LEAF_T * (N_LEAVES - i + 0.5)
 Z_FRONT_C = z_leaf(0) + LEAF_T / 2 + BOARD_T / 2
 Z_TOP = Z_FRONT_C + BOARD_T / 2                  # outer face of the closed case
 SPINE_R = Z_TOP / 2                              # a round back, so R is half the case
@@ -68,7 +68,10 @@ SPINE_R = Z_TOP / 2                              # a round back, so R is half th
 # where things come to rest once turned to the left
 Z_FRONT_LEFT = BOARD_T / 2                       # the board lies level with its twin
 def z_leaf_left(i):
-    return Z_BACK_TOP + LEAF_T * (i + 0.5)
+    # Turned pages land on the left block, not straight on the board. Without
+    # it the left half sat a whole text block lower than the right, and under
+    # perspective that reads as the two sides being different sizes.
+    return Z_BLOCK_TOP + LEAF_T * (i + 0.5)
 
 FPS = 24
 F_HOLD = 14
@@ -453,6 +456,43 @@ def rounded_spine(name, R, height, h, segt=26, segy=8):
     return ob
 
 
+def page_block(name, x0, x1, h, z_bot, z_top, dip, segx=40, segy=6):
+    """The text block. Its top carries the same gutter curve as the pages, so
+    a page resting on it cannot sink through near the hinge - which is what
+    put a hard grey band down the middle of the last spread."""
+    me = bpy.data.meshes.new(name)
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.collection.objects.link(ob)
+    bm = bmesh.new()
+    top, bot = {}, {}
+    for i in range(segx + 1):
+        for j in range(segy + 1):
+            x = x0 + (x1 - x0) * i / segx
+            y = (j / segy - 0.5) * h
+            d = dip * exp(-abs(x) / DIP_FALLOFF)
+            top[(i, j)] = bm.verts.new((x, y, z_top - d))
+            bot[(i, j)] = bm.verts.new((x, y, z_bot))
+    bm.verts.ensure_lookup_table()
+    for i in range(segx):
+        for j in range(segy):
+            bm.faces.new([top[(i, j)], top[(i + 1, j)],
+                          top[(i + 1, j + 1)], top[(i, j + 1)]])
+            bm.faces.new([bot[(i, j)], bot[(i, j + 1)],
+                          bot[(i + 1, j + 1)], bot[(i + 1, j)]])
+    def rim(a, b):
+        bm.faces.new([top[a], top[b], bot[b], bot[a]])
+    for i in range(segx):
+        rim((i + 1, 0), (i, 0))
+        rim((i, segy), (i + 1, segy))
+    for j in range(segy):
+        rim((0, j), (0, j + 1))
+        rim((segx, j + 1), (segx, j))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
+    return ob
+
+
 def box(name, x0, x1, y0, y1, z0, z1):
     me = bpy.data.meshes.new(name)
     ob = bpy.data.objects.new(name, me)
@@ -514,8 +554,14 @@ back.data.materials[0] = M_LINING_BACK
 back.data.materials[1] = M_GRAIN
 
 # --- the pages that never turn --------------------------------------------
-block = box("PageBlock", 0.0, PW, -PH / 2, PH / 2, Z_BACK_TOP, Z_BLOCK_TOP)
+block = page_block("PageBlock", 0.0, PW, PH, Z_BACK_TOP, Z_BLOCK_TOP, GUTTER_DIP)
 block.data.materials.append(M_BLOCK)
+
+# The mirror of it, under the turned pages. It grows over the first turn, by
+# which point the board is already lying flat beneath it, so nothing is ever
+# seen floating.
+left_block = page_block("LeftBlock", -PW, 0.0, PH, Z_BACK_TOP, Z_BLOCK_TOP, GUTTER_DIP)
+left_block.data.materials.append(M_BLOCK)
 
 # --- leaves ----------------------------------------------------------------
 SPREADS = [("photo_1.jpg", "quote_2.jpg"),
@@ -570,6 +616,19 @@ spine.keyframe_insert("scale", frame=t0)
 spine.scale.z = 0.13
 spine.keyframe_insert("scale", frame=t1)
 
+# It has to appear without ever being seen appearing. Flattening it in z does
+# not help - from overhead a flat slab is still an opaque rectangle. Instead it
+# grows out of the gutter along x, tracking the leading edge of the page that
+# is turning over it: a sheet at angle theta covers back to -PW*cos(theta), so
+# matching that keeps the block permanently hidden beneath it.
+left_block.scale.x = 0.001
+left_block.keyframe_insert("scale", frame=1)
+left_block.keyframe_insert("scale", frame=t2 + F_TURN * 0.5)
+left_block.scale.x = 0.707                       # theta = 135 degrees
+left_block.keyframe_insert("scale", frame=t2 + F_TURN * 0.75)
+left_block.scale.x = 1.0
+left_block.keyframe_insert("scale", frame=t2 + F_TURN)
+
 f = t2
 turns = []
 for i, lf in enumerate(leaves):
@@ -588,15 +647,15 @@ scene.render.fps = FPS
 
 # ------------------------------------------------------------------ camera -
 cam_data = bpy.data.cameras.new("Camera")
-cam_data.lens = 85.0
+cam_data.lens = 200.0
 cam = bpy.data.objects.new("Camera", cam_data)
 bpy.context.collection.objects.link(cam)
 cam.rotation_euler = (0.0, 0.0, 0.0)
 scene.camera = cam
-cam.location = (PW / 2, 0.0, 5.7)
+cam.location = (PW / 2, 0.0, 12.4)
 cam.keyframe_insert("location", frame=1)
 cam.keyframe_insert("location", frame=t0)
-cam.location = (0.0, 0.0, 5.7)
+cam.location = (0.0, 0.0, 12.4)
 cam.keyframe_insert("location", frame=t1)
 
 # ------------------------------------------------------------------ lights -
