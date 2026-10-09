@@ -25,3 +25,8 @@ desktop.ini
 # pulled in locally for the sharp-based texture/frame scripts
 /node_modules/
 /package-lock.json
+
+# the abandoned cloth experiment: build_book_v5.py keeps the findings,
+# the scene and its bake cache are not worth carrying
+NB_album_v5.blend
+blendcache_*/
