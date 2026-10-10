@@ -54,8 +54,12 @@ SEG_X, SEG_Y = 76, 24        # the cone needs resolution across the height
 
 # How much more the corners curl than the middle, and how far the unsupported
 # area sags. A board is stiff and barely does either; a page does both.
-LEAF_CONE, LEAF_DROOP = 1.35, 0.085
-COVER_CONE, COVER_DROOP = 0.22, 0.012
+# cone: how much more the corners curl than the middle
+# droop: how far unsupported area sags
+# twist: how far the head of the sheet leads its tail through the turn
+# skew:  how much the curl favours the corner the page is lifted by
+LEAF_CONE, LEAF_DROOP, LEAF_TWIST, LEAF_SKEW = 1.15, 0.075, 0.62, 0.45
+COVER_CONE, COVER_DROOP, COVER_TWIST, COVER_SKEW = 0.22, 0.012, 0.16, 0.10
 GUTTER_DIP = 0.0050
 DIP_FALLOFF = 0.090
 
@@ -103,7 +107,8 @@ def page_turn_group():
         pass
     I = ng.interface
     I.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
-    for nm in ("Theta", "Curl", "RootZ", "Width", "Cone", "Droop", "Height"):
+    for nm in ("Theta", "Curl", "RootZ", "Width", "Cone", "Droop", "Height",
+               "Twist", "Skew"):
         I.new_socket(nm, in_out="INPUT", socket_type="NodeSocketFloat")
     I.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
 
@@ -134,12 +139,24 @@ def page_turn_group():
     # that read as fake.
     yn = M("DIVIDE", sep.outputs["Y"], M("DIVIDE", gi.outputs["Height"], 2.0))
     yn2 = M("MULTIPLY", yn, yn)
-    cone = M("MULTIPLY_ADD", yn2, gi.outputs["Cone"], 1.0)
+    # Skew tips the cone toward the head, because a page is picked up by one
+    # corner: the curl starts there and is always tighter at that end.
+    cone = M("ADD", M("MULTIPLY_ADD", yn2, gi.outputs["Cone"], 1.0),
+             M("MULTIPLY", gi.outputs["Skew"], yn))
     a = M("MULTIPLY", M("DIVIDE", gi.outputs["Curl"], gi.outputs["Width"]), cone)
     ge = M("GREATER_THAN", a, -1e-9)
     sgn = M("MULTIPLY_ADD", ge, 2.0, -1.0)
     a = M("MULTIPLY_ADD", sgn, 2e-4, a)
-    th = gi.outputs["Theta"]
+
+    # The real motion is not a rotation about the spine with every horizontal
+    # slice moving together - it is a TWIST. The head of the page leads and
+    # the tail trails, all the way through: the top is already standing while
+    # the bottom corner still lies on the page beneath, and on the way down
+    # the bottom lands first. Scaling by sin(theta) holds the sheet untwisted
+    # where it starts and where it finishes, and peaks the lean mid-turn.
+    th0 = gi.outputs["Theta"]
+    th = M("ADD", th0,
+           M("MULTIPLY", M("MULTIPLY", gi.outputs["Twist"], yn), M("SINE", th0)))
     ang = M("MULTIPLY_ADD", a, s, th)
 
     # Centreline of the bent sheet.
@@ -160,7 +177,7 @@ def page_turn_group():
     xn = M("DIVIDE", s, gi.outputs["Width"])
     droop = M("MULTIPLY",
               M("MULTIPLY", gi.outputs["Droop"], M("MULTIPLY", xn, xn)),
-              M("MULTIPLY", M("ADD", yn2, 0.30), M("SINE", th)))
+              M("MULTIPLY", M("ADD", yn2, 0.30), M("SINE", th0)))
     z = M("SUBTRACT", z, droop)
     z = M("ADD", z, gi.outputs["RootZ"])
 
@@ -531,7 +548,8 @@ def box(name, x0, x1, y0, y1, z0, z1):
     return ob
 
 
-def add_turn(ob, width, root_z, cone=0.0, droop=0.0, height=1.0):
+def add_turn(ob, width, root_z, cone=0.0, droop=0.0, height=1.0,
+             twist=0.0, skew=0.0):
     g = ob.modifiers.new("PageTurn", "NODES")
     g.node_group = NG
     inp = g.properties.inputs
@@ -542,6 +560,8 @@ def add_turn(ob, width, root_z, cone=0.0, droop=0.0, height=1.0):
     inp.Socket_5.value = cone
     inp.Socket_6.value = droop
     inp.Socket_7.value = height
+    inp.Socket_8.value = twist
+    inp.Socket_9.value = skew
     return g
 
 
@@ -600,7 +620,8 @@ for i, (recto, verso) in enumerate(SPREADS):
     lf.data.materials.append(page_material("Leaf%d_R" % (i + 1), recto))
     lf.data.materials.append(page_material("Leaf%d_V" % (i + 1), verso))
     lf.data.materials.append(M_EDGE_PAGE)
-    add_turn(lf, PW, z_leaf(i), cone=LEAF_CONE, droop=LEAF_DROOP, height=PH)
+    add_turn(lf, PW, z_leaf(i), cone=LEAF_CONE, droop=LEAF_DROOP, height=PH,
+             twist=LEAF_TWIST, skew=LEAF_SKEW)
     leaves.append(lf)
 
 final = slab("FinalPage", PW, PH, 28, 8, LEAF_T, dip=GUTTER_DIP)
@@ -614,7 +635,8 @@ cover = slab("FrontCover", CW, CH, SEG_X, SEG_Y, BOARD_T, x0=0.0)
 cover.data.materials.append(M_GRAIN_LOGO)     # grain, debossed
 cover.data.materials.append(M_LINING)         # turn-in and pasted page
 cover.data.materials.append(M_EDGE_BOARD)     # the slab edge, seen when open
-add_turn(cover, CW, Z_FRONT_C, cone=COVER_CONE, droop=COVER_DROOP, height=CH)
+add_turn(cover, CW, Z_FRONT_C, cone=COVER_CONE, droop=COVER_DROOP, height=CH,
+         twist=COVER_TWIST, skew=COVER_SKEW)
 
 # --- rounded spine ---------------------------------------------------------
 spine = rounded_spine("Spine", SPINE_R, Z_TOP, CH)
