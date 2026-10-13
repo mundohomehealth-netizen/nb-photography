@@ -50,12 +50,7 @@ BLOCK_H = 0.055               # the pages that never turn
 CW, CH = PW + SQUARE, PH + 2 * SQUARE
 
 N_LEAVES = 4
-SEG_X, SEG_Y = 76, 24        # the cone needs resolution across the height
-
-# How much more the corners curl than the middle, and how far the unsupported
-# area sags. A board is stiff and barely does either; a page does both.
-LEAF_CONE, LEAF_DROOP = 1.35, 0.085
-COVER_CONE, COVER_DROOP = 0.22, 0.012
+SEG_X, SEG_Y = 76, 8
 GUTTER_DIP = 0.0050
 DIP_FALLOFF = 0.090
 
@@ -103,7 +98,7 @@ def page_turn_group():
         pass
     I = ng.interface
     I.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
-    for nm in ("Theta", "Curl", "RootZ", "Width", "Cone", "Droop", "Height"):
+    for nm in ("Theta", "Curl", "RootZ", "Width"):
         I.new_socket(nm, in_out="INPUT", socket_type="NodeSocketFloat")
     I.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
 
@@ -126,16 +121,7 @@ def page_turn_group():
         return n.outputs[0]
 
     s = sep.outputs["X"]
-
-    # A real page turns CONICALLY, not cylindrically: its free corners fall
-    # further than its middle, so curvature grows toward head and tail. With
-    # one curvature for the whole sheet - which is what every version up to
-    # here had - the page is a perfect cylinder, and that is the single thing
-    # that read as fake.
-    yn = M("DIVIDE", sep.outputs["Y"], M("DIVIDE", gi.outputs["Height"], 2.0))
-    yn2 = M("MULTIPLY", yn, yn)
-    cone = M("MULTIPLY_ADD", yn2, gi.outputs["Cone"], 1.0)
-    a = M("MULTIPLY", M("DIVIDE", gi.outputs["Curl"], gi.outputs["Width"]), cone)
+    a = M("DIVIDE", gi.outputs["Curl"], gi.outputs["Width"])
     ge = M("GREATER_THAN", a, -1e-9)
     sgn = M("MULTIPLY_ADD", ge, 2.0, -1.0)
     a = M("MULTIPLY_ADD", sgn, 2e-4, a)
@@ -153,15 +139,6 @@ def page_turn_group():
     zl = sep.outputs["Z"]
     x = M("SUBTRACT", cx, M("MULTIPLY", zl, M("SINE", ang)))
     z = M("ADD", cz, M("MULTIPLY", zl, M("COSINE", ang)))
-
-    # Weight. Strongest where the sheet is least supported - far from the
-    # hinge and out at the corners - and only while it is actually lifted,
-    # so it vanishes as the page lies down at either end of the turn.
-    xn = M("DIVIDE", s, gi.outputs["Width"])
-    droop = M("MULTIPLY",
-              M("MULTIPLY", gi.outputs["Droop"], M("MULTIPLY", xn, xn)),
-              M("MULTIPLY", M("ADD", yn2, 0.30), M("SINE", th)))
-    z = M("SUBTRACT", z, droop)
     z = M("ADD", z, gi.outputs["RootZ"])
 
     com = N.new("ShaderNodeCombineXYZ")
@@ -531,7 +508,7 @@ def box(name, x0, x1, y0, y1, z0, z1):
     return ob
 
 
-def add_turn(ob, width, root_z, cone=0.0, droop=0.0, height=1.0):
+def add_turn(ob, width, root_z):
     g = ob.modifiers.new("PageTurn", "NODES")
     g.node_group = NG
     inp = g.properties.inputs
@@ -539,9 +516,6 @@ def add_turn(ob, width, root_z, cone=0.0, droop=0.0, height=1.0):
     inp.Socket_2.value = 0.0
     inp.Socket_3.value = root_z
     inp.Socket_4.value = width
-    inp.Socket_5.value = cone
-    inp.Socket_6.value = droop
-    inp.Socket_7.value = height
     return g
 
 
@@ -600,7 +574,7 @@ for i, (recto, verso) in enumerate(SPREADS):
     lf.data.materials.append(page_material("Leaf%d_R" % (i + 1), recto))
     lf.data.materials.append(page_material("Leaf%d_V" % (i + 1), verso))
     lf.data.materials.append(M_EDGE_PAGE)
-    add_turn(lf, PW, z_leaf(i), cone=LEAF_CONE, droop=LEAF_DROOP, height=PH)
+    add_turn(lf, PW, z_leaf(i))
     leaves.append(lf)
 
 final = slab("FinalPage", PW, PH, 28, 8, LEAF_T, dip=GUTTER_DIP)
@@ -614,7 +588,7 @@ cover = slab("FrontCover", CW, CH, SEG_X, SEG_Y, BOARD_T, x0=0.0)
 cover.data.materials.append(M_GRAIN_LOGO)     # grain, debossed
 cover.data.materials.append(M_LINING)         # turn-in and pasted page
 cover.data.materials.append(M_EDGE_BOARD)     # the slab edge, seen when open
-add_turn(cover, CW, Z_FRONT_C, cone=COVER_CONE, droop=COVER_DROOP, height=CH)
+add_turn(cover, CW, Z_FRONT_C)
 
 # --- rounded spine ---------------------------------------------------------
 spine = rounded_spine("Spine", SPINE_R, Z_TOP, CH)
