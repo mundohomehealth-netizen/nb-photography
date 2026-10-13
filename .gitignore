@@ -30,3 +30,6 @@ desktop.ini
 # the scene and its bake cache are not worth carrying
 NB_album_v5.blend
 blendcache_*/
+
+# rendered preview video, regenerable from the frames
+preview_v4.mp4
