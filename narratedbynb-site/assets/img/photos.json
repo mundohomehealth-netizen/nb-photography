@@ -1,0 +1,114 @@
+[
+  {
+    "name": "ceremony-petals",
+    "alt": "A bride showered with rose petals during the ceremony",
+    "w": 2000,
+    "h": 1600,
+    "srcset": [
+      {
+        "file": "ceremony-petals-600.webp",
+        "w": 600
+      },
+      {
+        "file": "ceremony-petals-1200.webp",
+        "w": 1200
+      },
+      {
+        "file": "ceremony-petals-2000.webp",
+        "w": 2000
+      }
+    ]
+  },
+  {
+    "name": "couple-greenery",
+    "alt": "A couple laughing together among greenery",
+    "w": 2000,
+    "h": 1333,
+    "srcset": [
+      {
+        "file": "couple-greenery-600.webp",
+        "w": 600
+      },
+      {
+        "file": "couple-greenery-1200.webp",
+        "w": 1200
+      },
+      {
+        "file": "couple-greenery-2000.webp",
+        "w": 2000
+      }
+    ]
+  },
+  {
+    "name": "bride-golden",
+    "alt": "A bride in golden light, in a cream and gold saree",
+    "w": 1600,
+    "h": 2000,
+    "srcset": [
+      {
+        "file": "bride-golden-600.webp",
+        "w": 600
+      },
+      {
+        "file": "bride-golden-1200.webp",
+        "w": 1200
+      }
+    ]
+  },
+  {
+    "name": "bride-veil-bw",
+    "alt": "A bride beneath an embroidered veil, in black and white",
+    "w": 1600,
+    "h": 2000,
+    "srcset": [
+      {
+        "file": "bride-veil-bw-600.webp",
+        "w": 600
+      },
+      {
+        "file": "bride-veil-bw-1200.webp",
+        "w": 1200
+      }
+    ]
+  },
+  {
+    "name": "couple-beach",
+    "alt": "A couple walking hand in hand on a beach at sunset",
+    "w": 2000,
+    "h": 1333,
+    "srcset": [
+      {
+        "file": "couple-beach-600.webp",
+        "w": 600
+      },
+      {
+        "file": "couple-beach-1200.webp",
+        "w": 1200
+      },
+      {
+        "file": "couple-beach-2000.webp",
+        "w": 2000
+      }
+    ]
+  },
+  {
+    "name": "haldi-marigolds",
+    "alt": "Marigold petals thrown over a couple at their haldi",
+    "w": 2000,
+    "h": 1232,
+    "srcset": [
+      {
+        "file": "haldi-marigolds-600.webp",
+        "w": 600
+      },
+      {
+        "file": "haldi-marigolds-1200.webp",
+        "w": 1200
+      },
+      {
+        "file": "haldi-marigolds-2000.webp",
+        "w": 2000
+      }
+    ]
+  }
+]

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NarratedByNB — Wedding Photography &amp; Film, Toronto</title>
+<meta name="description" content="Wedding photography and film by NB. Honest, cinematic storytelling of the day as it felt — Toronto and destination.">
+<meta property="og:title" content="NarratedByNB — Wedding Photography &amp; Film">
+<meta property="og:description" content="Honest, cinematic storytelling of the day as it felt. Toronto and destination.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/img/logo-charcoal.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="preload" as="image" href="assets/frames/desktop/0001.webp">
+</head>
+<body>
+<a class="skip" href="#about">Skip the album</a>
+
+<header class="head" data-head>
+  <div class="head__in">
+    <a class="head__logo" href="#top" aria-label="NarratedByNB, back to top">
+      <img src="assets/img/logo-charcoal.png" alt="" width="657" height="408">
+    </a>
+    <button class="burger" aria-expanded="false" aria-controls="nav" data-burger>
+      <span class="sr">Menu</span><span class="burger__bars" aria-hidden="true"></span>
+    </button>
+    <nav class="nav" id="nav" data-nav>
+      <a href="#top">Home</a>
+      <a href="#about">About</a>
+      <a href="#work">Portfolio</a>
+      <a href="#investment">Investment</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="head__ig" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="3.9"/>
+        <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+    </a>
+  </div>
+</header>
+
+<!-- ============================ THE ALBUM ============================ -->
+<!-- Six stops, one per spread. Scroll snapping is what makes a gesture
+     land on a settled page instead of halfway through a turn. -->
+<section class="album" id="top" data-album
+         data-frames="assets/frames/" data-count="292"
+         data-stops="1,76,129,181,233,285">
+  <div class="album__stage">
+    <canvas class="album__canvas" data-canvas width="1400" height="1050"
+      role="img" aria-label="A leather wedding album opening and turning through five spreads"></canvas>
+
+    <!-- No wordmark here: the cover already carries the mark, debossed.
+         Repeating it over the top just prints the logo on itself. -->
+    <h1 class="album__intro album__intro--top" data-intro>
+      <span class="eyebrow">Timeless stories. Beautifully told.</span>
+      <span class="sr">NarratedByNB — Wedding Photography and Film</span>
+    </h1>
+    <p class="album__intro album__intro--bot" data-intro>Wedding Photography &amp; Film</p>
+
+    <div class="album__cue" data-cue aria-hidden="true">
+      <span>Scroll to open</span><i></i>
+    </div>
+
+    <!-- one per spread; the player shows the right one and hides it mid-turn -->
+    <div class="album__cta" data-cta aria-hidden="true">
+      <p class="album__caption" data-caption></p>
+      <button class="btn btn--ghost" type="button" data-open-gallery>
+        View gallery <span aria-hidden="true">&rarr;</span>
+      </button>
+    </div>
+
+    <ol class="album__dots" data-dots aria-label="Album spreads"></ol>
+  </div>
+  <!-- Snap targets only. Taken out of flow so the section height stays
+       explicit and the sticky stage releases at the right point. -->
+  <div class="album__snaps" aria-hidden="true">
+    <i class="album__stop"></i><i class="album__stop"></i><i class="album__stop"></i>
+    <i class="album__stop"></i><i class="album__stop"></i><i class="album__stop"></i>
+  </div>
+</section>
+
+<main>
+<!-- ============================== ABOUT ============================== -->
+<section class="sec about" id="about">
+  <div class="wrap about__in">
+    <div class="about__copy">
+      <p class="eyebrow">Hello, I'm NB</p>
+      <h2>Real moments.<br>Lasting memories.</h2>
+      <p>I'm a wedding photographer and filmmaker based in Toronto, capturing heartfelt
+         moments, authentic emotion and the beauty in every detail.</p>
+      <p>My approach is natural, cinematic and timeless — so you can relive your day
+         for years to come, exactly as it felt.</p>
+      <a class="btn" href="#contact">More about me <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <figure class="about__fig">
+      <img src="assets/img/bride-veil-bw-1200.webp" alt="A bride beneath an embroidered veil, in black and white" loading="lazy" width="1200" height="1500">
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ PORTFOLIO ============================ -->
+<section class="sec work" id="work">
+  <div class="wrap">
+    <div class="sec__head">
+      <p class="eyebrow">Featured work</p>
+      <button class="link" type="button" data-open-gallery>View full portfolio <span aria-hidden="true">&rarr;</span></button>
+    </div>
+    <div class="grid" data-grid></div>
+  </div>
+</section>
+
+<!-- =========================== INVESTMENT ============================ -->
+<section class="sec invest" id="investment">
+  <div class="wrap">
+    <p class="eyebrow center">Investment</p>
+    <h2 class="center">Collections</h2>
+    <p class="lede center">Every celebration is different, so each collection can be tailored.
+       Here is where most couples start.</p>
+    <div class="cards">
+      <article class="card">
+        <h3>The Ceremony</h3>
+        <p class="card__price">From <span data-edit>$3,200</span></p>
+        <ul>
+          <li>Up to 6 hours of coverage</li>
+          <li>Location scouting &amp; timeline help</li>
+          <li>250+ edited images</li>
+          <li>Private online gallery</li>
+        </ul>
+        <a class="btn btn--sm" href="#contact">Enquire <span aria-hidden="true">&rarr;</span></a>
+      </article>
+      <article class="card card--feature">
+        <p class="card__flag">Most chosen</p>
+        <h3>The Celebration</h3>
+        <p class="card__price">From <span data-edit>$4,800</span></p>
+        <ul>
+          <li>Up to 10 hours of coverage</li>
+          <li>Complimentary engagement session</li>
+          <li>600+ edited images</li>
+          <li>Sneak peek within 72 hours</li>
+        </ul>
+        <a class="btn btn--sm btn--solid" href="#contact">Enquire <span aria-hidden="true">&rarr;</span></a>
+      </article>
+      <article class="card">
+        <p class="card__flag">Includes the album</p>
+        <h3>The Heirloom</h3>
+        <p class="card__price">From <span data-edit>$6,900</span></p>
+        <ul>
+          <li>Full-day coverage + second shooter</li>
+          <li>Wedding film, edited</li>
+          <li>Hand-bound leather album</li>
+          <li>Rehearsal or welcome-party coverage</li>
+        </ul>
+        <a class="btn btn--sm" href="#contact">Enquire <span aria-hidden="true">&rarr;</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= CONTACT ============================= -->
+<section class="sec contact" id="contact">
+  <div class="wrap contact__in">
+    <div class="contact__copy">
+      <p class="eyebrow">Let's tell your story</p>
+      <h2>Check your date</h2>
+      <p>Tell me everything — how you met, what you're dreaming of, and where it's all
+         happening. I read every letter personally and reply within two business days.</p>
+      <ul class="contact__list">
+        <li><span>Email</span><a href="mailto:hello@narratedbynb.com" data-edit>hello@narratedbynb.com</a></li>
+        <li><span>Instagram</span><a href="https://instagram.com/" target="_blank" rel="noopener" data-edit>@narratedbynb</a></li>
+        <li><span>Based in</span><span>Toronto &amp; destination</span></li>
+      </ul>
+    </div>
+
+    <form class="form" name="enquiry" method="POST" action="/thank-you.html"
+          data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="enquiry">
+      <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      <div class="form__grid">
+        <p class="f"><label for="f-name">Your name *</label><input id="f-name" name="name" required autocomplete="name"></p>
+        <p class="f"><label for="f-partner">Partner's name</label><input id="f-partner" name="partner"></p>
+        <p class="f"><label for="f-email">Email *</label><input id="f-email" name="email" type="email" required autocomplete="email"></p>
+        <p class="f"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></p>
+        <p class="f"><label for="f-date">Wedding date</label><input id="f-date" name="event_date" type="date"></p>
+        <p class="f"><label for="f-venue">Venue or location</label><input id="f-venue" name="venue"></p>
+        <p class="f f--wide"><label for="f-msg">Your story *</label><textarea id="f-msg" name="message" rows="5" required></textarea></p>
+      </div>
+      <button class="btn btn--solid" type="submit">Send <span aria-hidden="true">&rarr;</span></button>
+      <p class="form__status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <a class="foot__logo" href="#top"><img src="assets/img/logo-ivory.png" alt="NarratedByNB" width="657" height="408"></a>
+    <p class="foot__line">Authentic · Cinematic · Timeless</p>
+    <a class="btn btn--light" href="#contact">Get in touch <span aria-hidden="true">&rarr;</span></a>
+  </div>
+  <div class="wrap foot__base">
+    <p>&copy; <span data-year></span> NarratedByNB</p>
+    <p><a href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a> · <a href="mailto:hello@narratedbynb.com">Email</a></p>
+  </div>
+</footer>
+
+<!-- ============================= GALLERY ============================= -->
+<div class="lb" data-lightbox hidden>
+  <div class="lb__bar">
+    <p class="lb__title" data-lb-title></p>
+    <button class="lb__x" type="button" data-lb-close aria-label="Close gallery">&times;</button>
+  </div>
+  <button class="lb__nav lb__nav--prev" type="button" data-lb-prev aria-label="Previous">&larr;</button>
+  <figure class="lb__fig"><img data-lb-img alt=""><figcaption data-lb-cap></figcaption></figure>
+  <button class="lb__nav lb__nav--next" type="button" data-lb-next aria-label="Next">&rarr;</button>
+  <ol class="lb__thumbs" data-lb-thumbs></ol>
+</div>
+
+<script src="assets/js/book.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>
