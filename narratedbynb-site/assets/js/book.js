@@ -37,13 +37,33 @@
     { title: "Golden hour", note: "After the day" }
   ];
 
-  var small = Math.min(window.screen.width, window.screen.height) < 820;
-  var DIR = BASE.replace(/\/?$/, "/") + (small ? "mobile/" : "desktop/");
-  var IMG_W = small ? 840 : 1400, IMG_H = small ? 630 : 1050;
+  /* The canvas is laid out in CSS pixels but painted in device pixels, so the
+     bitmap has to be chosen against both. Picking on screen size alone left a
+     retina laptop upscaling a 1400px frame by about 1.7, which is why the book
+     looked soft next to the rest of the page. */
+  var TIERS = [
+    { dir: "mobile/", w: 840, h: 630 },
+    { dir: "desktop/", w: 1400, h: 1050 },
+    { dir: "xl/", w: 2400, h: 1800 }
+  ];
+  function pickTier() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var byHeight = (vh * 0.92 / 0.926) * (4 / 3);
+    // the widest the canvas ever gets, which is while the book is closed
+    var widest = Math.max(Math.min((vw * 0.74) / 0.486, byHeight),
+                          Math.min((vw * 0.92) / 0.917, byHeight));
+    var need = widest * dpr;
+    for (var i = 0; i < TIERS.length; i++) if (TIERS[i].w >= need) return TIERS[i];
+    return TIERS[TIERS.length - 1];
+  }
+  var tier = pickTier();
+  var DIR = BASE.replace(new RegExp("/?$"), "/") + tier.dir;
+  var IMG_W = tier.w, IMG_H = tier.h;
   canvas.width = IMG_W; canvas.height = IMG_H;
 
   var frames = new Array(COUNT), ready = new Array(COUNT);
-  var drawn = -1, rafId = 0, state = 0;
+  var drawn = -1, rafId = 0, state = 0, shownSpread = -1;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function src(i) { return DIR + String(i).padStart(4, "0") + ".webp"; }
@@ -93,7 +113,7 @@
     if (Math.abs(t - sizedAt) < 0.004) return;
     sizedAt = t;
     var vw = window.innerWidth, vh = window.innerHeight;
-    var byHeight = (vh * 0.92 / H_SHARE) * (IMG_W / IMG_H);
+    var byHeight = (vh * 0.92 / H_SHARE) * (4 / 3);
     // different margins either side of the turn: a closed book wants air
     // around it, an open spread wants the width it can get
     var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
@@ -145,7 +165,11 @@
 
     sizeCanvas(easeInOut(Math.min(1, seg)));
 
-    var want = Math.round(STOPS[i] + (STOPS[i + 1] - STOPS[i]) * easeInOut(t));
+    // Linear within a segment, deliberately. Easing here flattens the rate to
+    // zero at both ends of every turn, which under a steady scroll reads as
+    // the book stopping at each spread. The renders already carry their own
+    // hold frames, so the settling is in the footage rather than the mapping.
+    var want = Math.round(STOPS[i] + (STOPS[i + 1] - STOPS[i]) * t);
     var use = nearest(want);
     if (use > 0 && use !== drawn) {
       ctx.clearRect(0, 0, IMG_W, IMG_H);           // the frames carry alpha
@@ -157,23 +181,16 @@
     section.style.setProperty("--introFade", String(Math.max(0, 1 - seg * 2.2)));
     section.style.setProperty("--cueFade", String(Math.max(0, 1 - seg * 1.6)));
 
-    // Settled is within a little of a stop; a gallery button has no business
-    // appearing while a page is still in the air.
+    // The button stays put and only its title changes. Fading it in and out at
+    // every spread was the other thing making the scroll feel like it stuttered.
     var nearestStop = Math.round(seg);
-    var settled = Math.abs(seg - nearestStop) < 0.12;
     setState(nearestStop);
-    // Visibility is the class alone, so the fade can play both ways. The
-    // earlier version only re-hid it when NOT settled, which left the button
-    // stranded on the closed book - settled at stop 0 took the else branch
-    // but never actually hid anything.
-    var wantCta = settled && nearestStop >= 1;
-    if (wantCta) {
-      var meta = SPREADS[nearestStop - 1];
-      if (caption && meta) caption.textContent = meta.title;
-      cta.setAttribute("data-spread", String(nearestStop));
+    var which = Math.min(SPREADS.length, Math.max(1, nearestStop));
+    if (which !== shownSpread) {
+      shownSpread = which;
+      if (caption) caption.textContent = SPREADS[which - 1].title;
+      cta.setAttribute("data-spread", String(which));
     }
-    cta.classList.toggle("is-on", wantCta);
-    cta.setAttribute("aria-hidden", String(!wantCta));
   }
 
   function request() { if (!rafId) rafId = requestAnimationFrame(tick); }

@@ -134,8 +134,11 @@ p { margin: 0 0 1.1em; }
 .album__intro--top { top: calc(var(--head-h) + 4svh); font-size: inherit; font-weight: inherit; }
 .album__intro--top .eyebrow { margin: 0; }
 .album__intro--bot {
-  bottom: 14svh; font-size: .68rem; letter-spacing: .3em;
-  text-transform: uppercase; color: var(--muted);
+  /* Sits under the eyebrow on narrow screens. The foot of the album is busy
+     enough with the spread title and the gallery button. */
+  top: calc(var(--head-h) + 7svh); bottom: auto;
+  font-size: .64rem; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--stone);
 }
 
 /* Wide screens: the book is portrait and the frame is 4:3, so there is a lot
@@ -149,10 +152,13 @@ p { margin: 0 0 1.1em; }
   }
   .album__intro--top { top: 50%; transform: translateY(-3.2em); }
   .album__intro--bot { top: 50%; bottom: auto; transform: translateY(1.2em); }
+  /* the cue belongs with the intro in the margin, clear of the button */
+  .album__cue { left: var(--gut); right: auto; bottom: auto; top: 50%;
+                transform: translateY(5em); justify-items: start; }
 }
 
 .album__cue {
-  position: absolute; left: 50%; bottom: 4vh; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 17svh; transform: translateX(-50%);
   display: grid; justify-items: center; gap: 10px;
   font-size: .64rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted);
   opacity: var(--cueFade, 1); transition: opacity .3s;
@@ -164,9 +170,8 @@ p { margin: 0 0 1.1em; }
 .album__cta {
   position: absolute; left: 50%; bottom: 5svh; transform: translateX(-50%);
   display: grid; justify-items: center; gap: 12px; text-align: center;
-  opacity: 0; pointer-events: none; transition: opacity .3s;
 }
-.album__cta.is-on { opacity: 1; pointer-events: auto; }
+.album__caption { transition: opacity .2s; }
 .album__caption {
   margin: 0; font-family: var(--display); font-style: italic; font-size: 1.05rem; color: var(--muted);
 }
@@ -342,3 +347,7 @@ p { margin: 0 0 1.1em; }
   100%    { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 @media (prefers-reduced-motion: reduce) { .boot { display: none; } }
+
+/* The button is permanent now, so the scroll cue only earns its place where
+   there is room for it beside the book. */
+@media (max-width: 979px) { .album__cue { display: none; } }
