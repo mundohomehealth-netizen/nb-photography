@@ -39,24 +39,6 @@
     sections.forEach(function (s) { io.observe(s); });
   }
 
-  /* In-page links have to cross the album, which is a mandatory-snap region.
-     Snapping is suspended for the trip and restored once the scroll settles. */
-  var jumpTimer = 0;
-  document.addEventListener("click", function (e) {
-    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
-    if (!a) return;
-    var id = a.getAttribute("href").slice(1);
-    var target = id ? document.getElementById(id) : null;
-    if (!target && id !== "top") return;
-    e.preventDefault();
-    var de = document.documentElement;
-    de.classList.add("nav-jump");
-    de.classList.remove("snapping");
-    window.scrollTo({ top: target ? target.offsetTop : 0, behavior: "smooth" });
-    clearTimeout(jumpTimer);
-    jumpTimer = setTimeout(function () { de.classList.remove("nav-jump"); }, 1100);
-  });
-
   var year = $("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
 

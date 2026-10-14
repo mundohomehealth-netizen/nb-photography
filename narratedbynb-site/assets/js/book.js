@@ -81,6 +81,26 @@
 
   function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
+  /* Measured off the frames: the closed book takes 48.6% of the frame width,
+     an open spread 91.7%, and both about 92.6% of its height. A closed book
+     can therefore be drawn far larger than an open one before anything runs
+     off the screen - which is the difference between a phone showing a decent
+     book and a postage stamp. The canvas is sized between those two as the
+     cover opens, so it reads as the album coming toward you. */
+  var CLOSED_SHARE = 0.486, OPEN_SHARE = 0.917, H_SHARE = 0.926;
+  var sizedAt = -1;
+  function sizeCanvas(t) {
+    if (Math.abs(t - sizedAt) < 0.004) return;
+    sizedAt = t;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var byHeight = (vh * 0.92 / H_SHARE) * (IMG_W / IMG_H);
+    // different margins either side of the turn: a closed book wants air
+    // around it, an open spread wants the width it can get
+    var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
+    var open = Math.min((vw * 0.92) / OPEN_SHARE, byHeight);
+    canvas.style.width = (closed + (open - closed) * t) + "px";
+  }
+
   function progress() {
     var r = section.getBoundingClientRect();
     var travel = section.offsetHeight - window.innerHeight;
@@ -97,9 +117,8 @@
       b.setAttribute("aria-label", i === 0 ? "Closed album" : "Spread " + i);
       b.addEventListener("click", function () {
         var travel = section.offsetHeight - window.innerHeight;
-        // "auto" on purpose: while snapping is on, a smooth scroll is
-        // cancelled by the snap. The snap animates the move instead.
-        window.scrollTo({ top: section.offsetTop + (travel * i) / SEGMENTS, behavior: "auto" });
+        window.scrollTo({ top: section.offsetTop + (travel * i) / SEGMENTS,
+                          behavior: reduce ? "auto" : "smooth" });
       });
       li.appendChild(b);
       dotList.appendChild(li);
@@ -123,6 +142,8 @@
     var seg = p * SEGMENTS;
     var i = Math.min(SEGMENTS - 1, Math.floor(seg));
     var t = seg - i;
+
+    sizeCanvas(easeInOut(Math.min(1, seg)));
 
     var want = Math.round(STOPS[i] + (STOPS[i + 1] - STOPS[i]) * easeInOut(t));
     var use = nearest(want);
@@ -158,17 +179,32 @@
   function request() { if (!rafId) rafId = requestAnimationFrame(tick); }
 
   function fit() {
-    // Snapping is only wanted while the album owns the screen. Leaving it on
-    // for the whole document would fight the sections underneath.
-    var r = section.getBoundingClientRect();
-    var active = r.top <= 1 && r.bottom > window.innerHeight * 1.02;
-    // A nav jump has to pass straight through the album. Mandatory snap would
-    // otherwise catch the scroll on its way past and strand it on a spread.
-    var jumping = document.documentElement.classList.contains("nav-jump");
-    document.documentElement.classList.toggle("snapping", active && !reduce && !jumping);
+    sizedAt = -1;
     drawn = -1;
     request();
   }
+
+  /* The deboss sits at about 23.5% of the frame width, dead centre: the cover
+     is 55.3% of the frame and the mark is 46% of the cover. Measuring it off
+     the live canvas keeps the landing true at any size. */
+  sizeCanvas(0);
+
+  (function boot() {
+    var el = document.querySelector("[data-boot]");
+    if (!el || reduce) return;
+    var mark = el.querySelector(".boot__logo");
+    function size() {
+      var w = canvas.getBoundingClientRect().width;
+      if (!w) return;
+      var target = w * 0.235;
+      var start = Math.min(window.innerWidth * 0.46, 430);
+      mark.style.setProperty("--bootTarget", target + "px");
+      mark.style.setProperty("--bootScale", String(Math.max(1.2, start / target)));
+    }
+    size();
+    window.addEventListener("resize", size);
+    el.addEventListener("animationend", function () { el.remove(); });
+  })();
 
   buildDots();
   setState(0);
@@ -188,7 +224,8 @@
     if (to === state) return;
     e.preventDefault();
     var travel = section.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: section.offsetTop + (travel * to) / SEGMENTS, behavior: "auto" });
+    window.scrollTo({ top: section.offsetTop + (travel * to) / SEGMENTS,
+                      behavior: reduce ? "auto" : "smooth" });
   });
 
   window.NB_ALBUM = { spreads: SPREADS, stops: STOPS };

@@ -106,15 +106,25 @@ p { margin: 0 0 1.1em; }
    with no height never releases, so it went on painting over the sections
    below it. */
 .album { position: relative; height: 600svh; background: var(--paper); }
-.album__stage {
-  position: sticky; top: 0; height: 100svh;
-  display: grid; place-items: center; overflow: hidden;
-}
+.album__stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 .album__snaps { position: absolute; inset: 0; pointer-events: none; }
-.album__stop { display: block; height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; }
-/* Sized by HEIGHT, not width: the frame is 4:3 and the book fills most of its
-   height, so fitting to width leaves the book small on a typical screen. */
-.album__canvas { display: block; height: min(64svh, 900px); width: auto; max-width: 100vw; }
+.album__stop { display: block; height: 100svh; }
+/* Setting both a height and a max-width constrained the box on both axes, and
+   a canvas simply stretches its bitmap to whatever box it is given - which is
+   what skewed the book on a phone. Width alone is set, and aspect-ratio keeps
+   the frame honest. */
+/* Centred absolutely, not by the grid: the grid sized its column to the
+   canvas, so centring within it was a no-op and an oversized canvas just hung
+   off one side. This stays centred however far it overflows - which it is
+   meant to do while the book is closed. */
+.album__canvas {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  aspect-ratio: 1400 / 1050;
+  width: min(100vw, calc(72svh * 4 / 3));
+  height: auto;
+}
 
 .album__intro {
   position: absolute; left: 0; right: 0; text-align: center;
@@ -132,7 +142,7 @@ p { margin: 0 0 1.1em; }
    of empty canvas either side of it. The intro goes there rather than on top
    of the leather, and the book can take the full height. */
 @media (min-width: 980px) {
-  .album__canvas { height: min(86svh, 940px); }
+  .album__canvas { width: min(96vw, calc(88svh * 4 / 3)); }
   .album__intro {
     left: var(--gut); right: auto; width: min(26vw, 320px);
     text-align: left; padding: 0;
@@ -302,13 +312,33 @@ p { margin: 0 0 1.1em; }
   .lb__fig img { max-height: 58svh; }
 }
 
-/* Snapping is switched on only while the album owns the screen (book.js adds
-   the class), so the sections below scroll normally. */
-html.snapping {
-  scroll-snap-type: y mandatory;
-  /* smooth and mandatory snap cancel one another: a programmatic smooth
-     scroll gets interrupted by the snap and silently lands nowhere. Inside
-     the album the snap does the moving, so smooth is turned off here. */
-  scroll-behavior: auto;
+/* Scroll snapping has been removed: the album now reads continuously, and the
+   frames follow the scroll rather than being carried to the next spread. */
+
+/* ============================ boot sequence =========================== */
+/* --bootScale is how much larger the mark starts than the deboss it lands
+   on; book.js measures the canvas and sets it. The fallback is sized for a
+   typical desktop so the sequence still reads if the script never runs. */
+.boot {
+  position: fixed; inset: 0; z-index: 400;
+  background: var(--ivory); display: grid; place-items: center;
+  animation: bootVeil 2.5s ease forwards;
 }
-@media (prefers-reduced-motion: reduce) { html.snapping { scroll-snap-type: none; } }
+.boot__logo {
+  width: var(--bootTarget, 230px); height: auto;
+  transform: scale(var(--bootScale, 2.6));
+  animation: bootMark 2.5s cubic-bezier(.22,.72,.24,1) forwards;
+}
+@keyframes bootMark {
+  0%   { opacity: 0; transform: scale(var(--bootScale, 2.6)) translateY(10px); }
+  20%  { opacity: 1; transform: scale(var(--bootScale, 2.6)) translateY(0); }
+  40%  { opacity: 1; }
+  92%  { opacity: 0.06; }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes bootVeil {
+  0%, 46% { opacity: 1; visibility: visible; }
+  88%     { opacity: 0; visibility: visible; }
+  100%    { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) { .boot { display: none; } }
