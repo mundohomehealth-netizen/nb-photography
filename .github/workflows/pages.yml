@@ -30,7 +30,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # enablement creates the Pages site via the API if it does not exist yet,
+      # which is what "Get Pages site failed / Not Found" means. Without it the
+      # repo has to be switched to the GitHub Actions source by hand first.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
