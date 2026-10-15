@@ -1,0 +1,14 @@
+# Which folder Netlify publishes.
+#
+# This repository holds two sites: narratedbynb-site/ is the current one, and
+# nb-photography-site/ is the earlier cream-and-leather version kept for
+# reference. Pinning the publish directory here rather than leaving it to the
+# dashboard means any site built from this repo serves the right one, and a
+# site that was previously pointed at the other folder is corrected on its next
+# deploy without anyone having to remember.
+#
+# There is no build step: the site is plain HTML, CSS and JS. Caching and
+# security headers live in narratedbynb-site/_headers.
+
+[build]
+  publish = "narratedbynb-site"
