@@ -142,15 +142,23 @@
   var form = $(".form");
   if (form) {
     var status = $(".form__status", form);
+    var stub = form.hasAttribute("data-form-stub");
     form.addEventListener("submit", function (e) {
-      // Netlify needs a real POST, but the fields are checked first: the form
-      // carries required attributes and the browser enforces them, so this
-      // only steps in to give the failure somewhere to be announced.
       if (!form.checkValidity()) {
         e.preventDefault();
         status.className = "form__status err";
         status.textContent = "Please fill in the fields marked with a star.";
         form.reportValidity();
+        return;
+      }
+      if (stub) {
+        // No backend is connected. Saying "sent" here would be a lie to anyone
+        // who finds the site, and a silent one - the enquiry simply vanishes.
+        e.preventDefault();
+        var to = (document.querySelector('.contact__list a[href^="mailto:"]') || {}).textContent || "";
+        status.className = "form__status err";
+        status.textContent = "This form is not connected yet — please email " +
+          (to.trim() || "us") + " directly.";
         return;
       }
       status.className = "form__status";
