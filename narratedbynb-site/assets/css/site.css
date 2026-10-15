@@ -126,62 +126,48 @@ p { margin: 0 0 1.1em; }
   height: auto;
 }
 
+/* Narrow screens stack both lines above the book; book.js measures how far
+   down they reach and keeps the cover clear of them. */
 .album__intro {
   position: absolute; left: 0; right: 0; text-align: center;
   margin: 0; padding: 0 var(--gut); pointer-events: none;
   opacity: var(--introFade, 1); transition: opacity .25s linear;
+  font-size: .78rem; letter-spacing: .24em; text-transform: uppercase;
+  font-weight: 500; line-height: 1.9;
 }
-.album__intro--top { top: calc(var(--head-h) + 4svh); font-size: inherit; font-weight: inherit; }
-.album__intro--top .eyebrow { margin: 0; }
-.album__intro--bot {
-  /* Sits under the eyebrow on narrow screens. The foot of the album is busy
-     enough with the spread title and the gallery button. */
-  top: calc(var(--head-h) + 7svh); bottom: auto;
-  font-size: .64rem; letter-spacing: .28em;
-  text-transform: uppercase; color: var(--stone);
-}
+.album__intro--left { top: calc(var(--head-h) + 3.5svh); color: var(--sage); }
+.album__intro--left .eyebrow { margin: 0; font-size: inherit; letter-spacing: inherit; }
+.album__intro--left br { display: none; }
+.album__intro--right { top: calc(var(--head-h) + 10svh); color: var(--stone); font-size: .68rem; }
 
-/* Wide screens: the book is portrait and the frame is 4:3, so there is a lot
-   of empty canvas either side of it. The intro goes there rather than on top
-   of the leather, and the book can take the full height. */
+/* Wide screens put one phrase either side of the book, on the empty canvas
+   the portrait cover leaves in a 4:3 frame. */
 @media (min-width: 980px) {
   .album__canvas { width: min(96vw, calc(88svh * 4 / 3)); }
   .album__intro {
-    left: var(--gut); right: auto; width: min(26vw, 320px);
-    text-align: left; padding: 0;
+    top: 50%; transform: translateY(-50%);
+    width: min(22vw, 260px); padding: 0;
   }
-  .album__intro--top { top: 50%; transform: translateY(-3.2em); }
-  .album__intro--bot { top: 50%; bottom: auto; transform: translateY(1.2em); }
+  .album__intro--left  { left: var(--gut); right: auto; text-align: left; }
+  .album__intro--left br { display: inline; }
+  .album__intro--right { right: var(--gut); left: auto; text-align: right; }
 }
-
-.album__cue {
-  position: absolute; left: 50%; bottom: 17svh; transform: translateX(-50%);
-  display: grid; justify-items: center; gap: 10px;
-  font-size: .64rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted);
-  opacity: var(--cueFade, 1); transition: opacity .3s;
-}
-.album__cue i { width: 1px; height: 42px; background: linear-gradient(var(--stone), transparent); animation: drip 2.4s ease-in-out infinite; transform-origin: top; }
-@keyframes drip { 0% { transform: scaleY(0); } 55% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .album__cue i { animation: none; } }
 
 .album__cta {
   position: absolute; left: 50%; bottom: 5svh; transform: translateX(-50%);
   display: grid; justify-items: center; gap: 12px; text-align: center;
+  /* It arrives once, as the cover opens, and then stays - only its title
+     changes. Fading it per spread was what made the scroll feel like it
+     stuttered. */
+  opacity: 0; pointer-events: none; transition: opacity .45s ease;
 }
-.album__caption { transition: opacity .2s; }
+.album__cta.is-on { opacity: 1; pointer-events: auto; }
 .album__caption {
+  transition: opacity .2s;
   margin: 0; font-family: var(--display); font-style: italic; font-size: 1.05rem; color: var(--muted);
 }
 
-.album__dots {
-  position: absolute; right: clamp(14px, 2.4vw, 34px); top: 50%; transform: translateY(-50%);
-  list-style: none; margin: 0; padding: 0; display: grid; gap: 12px;
-}
-.album__dots button {
-  width: 9px; height: 9px; padding: 0; border-radius: 50%; cursor: pointer;
-  border: 1px solid var(--stone); background: none; transition: background .25s, transform .25s;
-}
-.album__dots button[aria-current="true"] { background: var(--sage); border-color: var(--sage); transform: scale(1.25); }
+
 
 /* ============================== sections ============================ */
 .sec { padding: clamp(72px, 11vh, 150px) 0; }
@@ -280,7 +266,6 @@ p { margin: 0 0 1.1em; }
   .cards { grid-template-columns: 1fr; }
   .grid { grid-template-columns: repeat(2, 1fr); }
   .form__grid { grid-template-columns: 1fr; }
-  .album__dots { display: none; }
 }
 @media (max-width: 720px) {
   .burger {
@@ -344,16 +329,3 @@ p { margin: 0 0 1.1em; }
   100%    { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 @media (prefers-reduced-motion: reduce) { .boot { display: none; } }
-
-/* The button is permanent now, so the scroll cue only earns its place where
-   there is room for it beside the book. */
-@media (max-width: 979px) { .album__cue { display: none; } }
-
-/* Both cue rules live at the end deliberately. The base .album__cue rule sets
-   left, bottom and transform at the same specificity, so anything meant to
-   override it has to come after it in the file - placing these earlier left
-   the cue sitting on the cover. */
-@media (min-width: 980px) {
-  .album__cue { left: var(--gut); right: auto; bottom: auto; top: 50%;
-                transform: translateY(5em); justify-items: start; }
-}

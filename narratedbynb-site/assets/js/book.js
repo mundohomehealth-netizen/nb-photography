@@ -15,13 +15,19 @@
   var section = document.querySelector("[data-album]");
   if (!section) return;
 
+  /* Browsers restore the previous scroll position on reload, which dropped the
+     visitor into the middle of an open spread with no idea how they got there.
+     The album is meant to start closed. */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
+  window.addEventListener("load", function () { window.scrollTo(0, 0); });
+
   var canvas = section.querySelector("[data-canvas]");
   var ctx = canvas.getContext("2d");
   var intro = section.querySelector("[data-intro]");
   var cue = section.querySelector("[data-cue]");
   var cta = section.querySelector("[data-cta]");
   var caption = section.querySelector("[data-caption]");
-  var dotList = section.querySelector("[data-dots]");
 
   var COUNT = parseInt(section.getAttribute("data-count"), 10) || 292;
   var BASE = section.getAttribute("data-frames") || "assets/frames/";
@@ -126,9 +132,20 @@
     // the cover under the nav and put the button on the leather. The band is
     // not centred on the screen either, so the canvas is nudged up by half the
     // difference rather than being centred on the viewport.
-    var band = Math.max(vh * 0.45, vh - TOP_CHROME - BOT_CHROME);
+    // When the two phrases stack above the book they take a variable amount of
+    // room, so the clearance is measured rather than assumed - a fixed figure
+    // is what let the text clip the cover on tablets.
+    var top = TOP_CHROME;
+    if (!window.matchMedia("(min-width: 980px)").matches) {
+      var lowest = 0;
+      [].forEach.call(section.querySelectorAll(".album__intro"), function (el) {
+        lowest = Math.max(lowest, el.getBoundingClientRect().bottom);
+      });
+      if (lowest) top = Math.max(TOP_CHROME, lowest + 18);
+    }
+    var band = Math.max(vh * 0.45, vh - top - BOT_CHROME);
     var byHeight = (band / H_SHARE) * (4 / 3);
-    canvas.style.setProperty("--shift", ((BOT_CHROME - TOP_CHROME) / 2) + "px");
+    canvas.style.setProperty("--shift", ((BOT_CHROME - top) / 2) + "px");
     // different margins either side of the turn: a closed book wants air
     // around it, an open spread wants the width it can get
     var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
@@ -143,31 +160,9 @@
     return Math.min(1, Math.max(0, -r.top / travel));
   }
 
-  function buildDots() {
-    if (!dotList) return;
-    STOPS.forEach(function (_, i) {
-      var li = document.createElement("li");
-      var b = document.createElement("button");
-      b.type = "button";
-      b.setAttribute("aria-label", i === 0 ? "Closed album" : "Spread " + i);
-      b.addEventListener("click", function () {
-        var travel = section.offsetHeight - window.innerHeight;
-        window.scrollTo({ top: section.offsetTop + (travel * i) / SEGMENTS,
-                          behavior: reduce ? "auto" : "smooth" });
-      });
-      li.appendChild(b);
-      dotList.appendChild(li);
-    });
-  }
-
   function setState(next) {
     if (next === state && section.hasAttribute("data-state")) return;
     state = next;
-    if (dotList) {
-      [].forEach.call(dotList.querySelectorAll("button"), function (b, i) {
-        b.setAttribute("aria-current", String(i === state));
-      });
-    }
     section.setAttribute("data-state", String(state));
   }
 
@@ -206,6 +201,11 @@
       if (caption) caption.textContent = SPREADS[which - 1].title;
       cta.setAttribute("data-spread", String(which));
     }
+    // There is nothing to show a gallery of until the cover is open, so it
+    // arrives once - as the cover lands - and then stays, title changing.
+    var open = seg > 0.8;
+    cta.classList.toggle("is-on", open);
+    cta.setAttribute("aria-hidden", String(!open));
   }
 
   function request() { if (!rafId) rafId = requestAnimationFrame(tick); }
@@ -252,7 +252,6 @@
     setTimeout(done, 8000);
   })();
 
-  buildDots();
   setState(0);
   window.addEventListener("scroll", function () { request(); fit(); }, { passive: true });
   window.addEventListener("resize", fit);
