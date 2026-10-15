@@ -26,7 +26,7 @@
   }
 
   /* which section the nav should highlight */
-  var sections = ["about", "work", "investment", "contact"].map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  var sections = ["about", "work", "contact"].map(function (id) { return document.getElementById(id); }).filter(Boolean);
   var links = {};
   $$(".nav a").forEach(function (a) { links[a.getAttribute("href").replace("#", "")] = a; });
   if ("IntersectionObserver" in window) {

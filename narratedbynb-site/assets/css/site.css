@@ -189,18 +189,6 @@ p { margin: 0 0 1.1em; }
 }
 .grid button:hover img { transform: scale(1.045); filter: brightness(1.05); }
 
-.invest { background: var(--ivory); }
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 2vw, 26px); margin-top: 46px; }
-.card { border: 1px solid var(--line); padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; }
-.card--feature { background: var(--green); color: var(--ivory); border-color: var(--green); }
-.card--feature .card__price, .card--feature li { color: rgba(243,241,234,.78); }
-.card__flag { font-size: .62rem; letter-spacing: .24em; text-transform: uppercase; color: var(--stone); margin: 0 0 1em; }
-.card__price { font-family: var(--display); font-style: italic; font-size: 1.12rem; color: var(--muted); margin: 0 0 1.4em; }
-.card ul { list-style: none; margin: 0 0 2em; padding: 0; display: grid; gap: .6em; font-size: .92rem; color: var(--muted); }
-.card ul li { padding-left: 1.1em; position: relative; }
-.card ul li::before { content: "—"; position: absolute; left: 0; opacity: .5; }
-.card .btn { margin-top: auto; align-self: flex-start; }
-
 .contact { background: #efece3; }
 .contact__in { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(32px, 6vw, 80px); }
 .contact__list { list-style: none; margin: 2em 0 0; padding: 0; display: grid; gap: .9em; font-size: .92rem; }
@@ -263,7 +251,6 @@ p { margin: 0 0 1.1em; }
 /* ============================== narrow ============================== */
 @media (max-width: 900px) {
   .about__in, .contact__in { grid-template-columns: 1fr; }
-  .cards { grid-template-columns: 1fr; }
   .grid { grid-template-columns: repeat(2, 1fr); }
   .form__grid { grid-template-columns: 1fr; }
 }
