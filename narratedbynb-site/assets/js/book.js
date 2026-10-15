@@ -49,7 +49,7 @@
   function pickTier() {
     var vw = window.innerWidth, vh = window.innerHeight;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var byHeight = (vh * 0.92 / 0.926) * (4 / 3);
+    var byHeight = (Math.max(vh * 0.45, vh - 250) / 0.926) * (4 / 3);
     // the widest the canvas ever gets, which is while the book is closed
     var widest = Math.max(Math.min((vw * 0.74) / 0.486, byHeight),
                           Math.min((vw * 0.92) / 0.917, byHeight));
@@ -79,9 +79,16 @@
 
   /* The settled frames first - those are what a reader actually stops on -
      then a coarse pass, then everything, so a fast scroll always has
-     something close to show. */
-  (function preload() {
-    STOPS.forEach(load);
+     something close to show.
+  
+     The bulk pass waits for the opening sequence. Decoding 292 frames saturates
+     the main thread, which delayed the boot animation and the animationend that
+     clears it: the mark sat there for ten seconds or more on a cold load. */
+  STOPS.forEach(load);
+  var bulkStarted = false;
+  function preloadRest() {
+    if (bulkStarted) return;
+    bulkStarted = true;
     var order = [], step, i;
     for (step of [8, 4, 2, 1]) for (i = 1; i <= COUNT; i += step) order.push(i);
     var k = 0;
@@ -89,7 +96,7 @@
       for (var n = 0; k < order.length && n < 12; n++) load(order[k++]);
       if (k < order.length) setTimeout(next, 28);
     })();
-  })();
+  }
 
   function nearest(i) {
     for (var d = 0; d < COUNT; d++) {
@@ -108,12 +115,20 @@
      book and a postage stamp. The canvas is sized between those two as the
      cover opens, so it reads as the album coming toward you. */
   var CLOSED_SHARE = 0.486, OPEN_SHARE = 0.917, H_SHARE = 0.926;
+  var TOP_CHROME = 100, BOT_CHROME = 150;   // header + a gap, title + button + a gap
   var sizedAt = -1;
   function sizeCanvas(t) {
     if (Math.abs(t - sizedAt) < 0.004) return;
     sizedAt = t;
     var vw = window.innerWidth, vh = window.innerHeight;
-    var byHeight = (vh * 0.92 / H_SHARE) * (4 / 3);
+    // The book has to clear the fixed header above it and the spread title and
+    // gallery button below it. Budgeting against the full viewport height ran
+    // the cover under the nav and put the button on the leather. The band is
+    // not centred on the screen either, so the canvas is nudged up by half the
+    // difference rather than being centred on the viewport.
+    var band = Math.max(vh * 0.45, vh - TOP_CHROME - BOT_CHROME);
+    var byHeight = (band / H_SHARE) * (4 / 3);
+    canvas.style.setProperty("--shift", ((BOT_CHROME - TOP_CHROME) / 2) + "px");
     // different margins either side of the turn: a closed book wants air
     // around it, an open spread wants the width it can get
     var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
@@ -208,7 +223,7 @@
 
   (function boot() {
     var el = document.querySelector("[data-boot]");
-    if (!el || reduce) return;
+    if (!el || reduce) { if (el) el.remove(); preloadRest(); return; }
     var mark = el.querySelector(".boot__logo");
     function size() {
       var w = canvas.getBoundingClientRect().width;
@@ -220,7 +235,21 @@
     }
     size();
     window.addEventListener("resize", size);
-    el.addEventListener("animationend", function () { el.remove(); });
+    function done() {
+      if (el.parentNode) el.remove();
+      preloadRest();
+    }
+    el.addEventListener("animationend", done);
+    // A CSS animation does not begin until the first paint, so a timer started
+    // at script time can expire before the sequence has even been seen - in a
+    // background tab that is seconds out. The fallback waits for a frame to be
+    // painted and only then starts its clock.
+    requestAnimationFrame(function () { setTimeout(done, 3000); });
+    // And a hard ceiling. If the page never paints - a tab left in the
+    // background, a window behind another - neither the animation nor the
+    // frame callback above ever runs, and without this the veil would cover
+    // the site indefinitely.
+    setTimeout(done, 8000);
   })();
 
   buildDots();

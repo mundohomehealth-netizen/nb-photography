@@ -119,7 +119,7 @@ p { margin: 0 0 1.1em; }
    meant to do while the book is closed. */
 .album__canvas {
   position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, calc(-50% - var(--shift, 0px)));
   display: block;
   aspect-ratio: 1400 / 1050;
   width: min(100vw, calc(72svh * 4 / 3));
@@ -152,9 +152,6 @@ p { margin: 0 0 1.1em; }
   }
   .album__intro--top { top: 50%; transform: translateY(-3.2em); }
   .album__intro--bot { top: 50%; bottom: auto; transform: translateY(1.2em); }
-  /* the cue belongs with the intro in the margin, clear of the button */
-  .album__cue { left: var(--gut); right: auto; bottom: auto; top: 50%;
-                transform: translateY(5em); justify-items: start; }
 }
 
 .album__cue {
@@ -351,3 +348,12 @@ p { margin: 0 0 1.1em; }
 /* The button is permanent now, so the scroll cue only earns its place where
    there is room for it beside the book. */
 @media (max-width: 979px) { .album__cue { display: none; } }
+
+/* Both cue rules live at the end deliberately. The base .album__cue rule sets
+   left, bottom and transform at the same specificity, so anything meant to
+   override it has to come after it in the file - placing these earlier left
+   the cue sitting on the cover. */
+@media (min-width: 980px) {
+  .album__cue { left: var(--gut); right: auto; bottom: auto; top: 50%;
+                transform: translateY(5em); justify-items: start; }
+}
