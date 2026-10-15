@@ -308,11 +308,17 @@ p { margin: 0 0 1.1em; }
    typical desktop so the sequence still reads if the script never runs. */
 .boot {
   position: fixed; inset: 0; z-index: 400;
-  background: var(--ivory); display: grid; place-items: center;
+  background: var(--ivory);
   animation: bootVeil 2.5s ease forwards;
 }
+/* Positioned by book.js against the canvas, not centred in the veil: the
+   canvas is shifted up to clear the header, and the deboss is a touch right
+   of the frame centre, so a viewport-centred mark lands low and left.
+   transform-origin stays central so the scale collapses onto that point. */
 .boot__logo {
-  width: var(--bootTarget, 230px); height: auto;
+  position: absolute; height: auto;
+  width: var(--bootTarget, 230px);
+  transform-origin: 50% 50%;
   transform: scale(var(--bootScale, 2.6));
   animation: bootMark 2.5s cubic-bezier(.22,.72,.24,1) forwards;
 }

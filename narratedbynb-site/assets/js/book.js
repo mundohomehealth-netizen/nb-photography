@@ -19,8 +19,24 @@
      visitor into the middle of an open spread with no idea how they got there.
      The album is meant to start closed. */
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  window.scrollTo(0, 0);
-  window.addEventListener("load", function () { window.scrollTo(0, 0); });
+  // One reset is not enough: the restore can land after load, and a bfcache
+  // return skips load altogether. Held briefly instead, then released so the
+  // visitor can scroll normally.
+  var holdUntil = 0;
+  function toTop() { window.scrollTo(0, 0); }
+  function holdTop(ms) {
+    holdUntil = Date.now() + ms;
+    toTop();
+    (function again() {
+      if (Date.now() > holdUntil) return;
+      toTop();
+      requestAnimationFrame(again);
+      setTimeout(again, 60);            // rAF alone stalls in a hidden tab
+    })();
+  }
+  holdTop(600);
+  window.addEventListener("load", function () { holdTop(400); });
+  window.addEventListener("pageshow", function (e) { if (e.persisted) holdTop(400); });
 
   var canvas = section.querySelector("[data-canvas]");
   var ctx = canvas.getContext("2d");
@@ -123,6 +139,7 @@
   var CLOSED_SHARE = 0.486, OPEN_SHARE = 0.917, H_SHARE = 0.926;
   var TOP_CHROME = 100, BOT_CHROME = 150;   // header + a gap, title + button + a gap
   var sizedAt = -1;
+  var placeBoot = null;          // set by boot(), below
   function sizeCanvas(t) {
     if (Math.abs(t - sizedAt) < 0.004) return;
     sizedAt = t;
@@ -151,6 +168,7 @@
     var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
     var open = Math.min((vw * 0.92) / OPEN_SHARE, byHeight);
     canvas.style.width = (closed + (open - closed) * t) + "px";
+    if (placeBoot) placeBoot();  // the mark is positioned off this box
   }
 
   function progress() {
@@ -216,27 +234,46 @@
     request();
   }
 
-  /* The deboss sits at about 23.5% of the frame width, dead centre: the cover
-     is 55.3% of the frame and the mark is 46% of the cover. Measuring it off
-     the live canvas keeps the landing true at any size. */
+  /* Where the mark has to land, as fractions of the CANVAS - not the viewport.
+     The canvas is shifted up to sit between the header and the button, and the
+     cover is not quite centred in the frame, so anything centred on the window
+     lands low and slightly left.
+
+     Derived from the scene (the mark is 46% of a cover that is 1.022 units wide
+     in a 2.213-unit frame) and confirmed against the render by band-passing
+     frame 1 to isolate the deboss: 0.1954 measured against 0.1985 derived, the
+     difference being the faintest edges falling under the threshold. */
+  var DEBOSS_W = 0.1985, DEBOSS_CX = 0.5035, DEBOSS_CY = 0.4995;
+
   sizeCanvas(0);
 
   (function boot() {
     var el = document.querySelector("[data-boot]");
     if (!el || reduce) { if (el) el.remove(); preloadRest(); return; }
     var mark = el.querySelector(".boot__logo");
+    var markAspect = (parseFloat(mark.getAttribute("width")) || 657) /
+                     (parseFloat(mark.getAttribute("height")) || 408);
     function size() {
-      var w = canvas.getBoundingClientRect().width;
-      if (!w) return;
-      var target = w * 0.235;
-      var start = Math.min(window.innerWidth * 0.46, 430);
-      mark.style.setProperty("--bootTarget", target + "px");
-      mark.style.setProperty("--bootScale", String(Math.max(1.2, start / target)));
+      var r = canvas.getBoundingClientRect();
+      if (!r.width) return;
+      var w = r.width * DEBOSS_W;
+      var h = w / markAspect;
+      // placed against the canvas box, so it tracks the shift and the scaling
+      mark.style.width = w + "px";
+      mark.style.left = (r.left + r.width * DEBOSS_CX - w / 2) + "px";
+      mark.style.top = (r.top + r.height * DEBOSS_CY - h / 2) + "px";
+      // A fixed multiple of where it lands, so the travel reads the same on
+      // every screen. Absolute caps only come into play when the screen is too
+      // small to show the mark at that size.
+      var start = Math.min(w * 2.1, window.innerWidth * 0.78, window.innerHeight * 0.44);
+      mark.style.setProperty("--bootScale", String(Math.max(1.2, start / w)));
     }
+    placeBoot = size;
     size();
     window.addEventListener("resize", size);
     function done() {
       if (el.parentNode) el.remove();
+      placeBoot = null;
       preloadRest();
     }
     el.addEventListener("animationend", done);
