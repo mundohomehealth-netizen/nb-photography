@@ -148,7 +148,8 @@ p { margin: 0 0 1.1em; }
      this rather than from the stage, or it drifts down into the strip
      below the picture. On a wide screen the cap wins and this is just
      100svh, which is what the frame is there. */
-  --frameH: min(177.78vw, 100svh);
+  --frameH: min(177.78vw, 100vh);
+  --frameH: min(177.78vw, 100svh);   /* svh where it is understood */
   position: relative;
   height: calc(7 * var(--stopH));
   /* A phone taller than 9:16 leaves a little below the frame. It reads as
@@ -166,6 +167,7 @@ p { margin: 0 0 1.1em; }
    the first term always wins there. */
 .album__stage {
   position: sticky; top: 0; overflow: hidden;
+  height: 100vh;
   height: 100svh;
 }
 .album__snaps { position: absolute; inset: 0; pointer-events: none; }
@@ -198,10 +200,21 @@ p { margin: 0 0 1.1em; }
 .album__wash { display: none; }
 .album__fill {
   /* opaque behind the frame, then out across everything below it */
-  -webkit-mask-image: linear-gradient(to bottom, #000 0,
-                      #000 calc(var(--frameH) - 40px), transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0,
-              #000 calc(var(--frameH) - 40px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 66%, transparent 94%);
+  mask-image: linear-gradient(to bottom, #000 0 66%, transparent 94%);
+}
+
+/* If masks are not supported at all, the fill would sit there unmasked -
+   an opaque blurred block with a hard edge where the stage ends, which is
+   worse than not having it. On a phone it is dropped in that case, and the
+   frame simply ends on the page colour, which it now matches closely. The
+   wide layout wants the fill unmasked anyway, so this is scoped away from
+   it. */
+@supports not ((mask-image: linear-gradient(#000, #000)) or
+               (-webkit-mask-image: linear-gradient(#000, #000))) {
+  @media (max-width: 979px) {
+    .album__fill { display: none; }
+  }
 }
 .album__fill {
   position: absolute; inset: 0; z-index: 0;
