@@ -4,10 +4,10 @@
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
 
   /* ------------------------------- header ------------------------------ */
+  // The header has no bar behind it any more - it sits straight on the
+  // hero - so there is nothing for a scroll listener to switch on. The
+  // element is still needed here for the open-menu panel below.
   var head = $("[data-head]");
-  function onScroll() { head.classList.toggle("is-solid", window.scrollY > 40); }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
 
   var burger = $("[data-burger]"), nav = $("[data-nav]");
   if (burger && nav) {

@@ -69,20 +69,42 @@ p { margin: 0 0 1.1em; }
 .btn--sm { padding: .9em 1.5em; font-size: .68rem; }
 .btn--light { border-color: rgba(243,241,234,.5); color: var(--ivory); }
 .btn--light:hover { background: var(--ivory); color: var(--green); border-color: var(--ivory); }
-.btn--ghost {
-  border-color: rgba(24,25,23,.25); color: var(--ink);
-  background: rgba(243,241,234,.86); backdrop-filter: blur(8px);
+/* The hero's one button. It sits on the photograph rather than on the
+   page, so it is glass rather than a panel: enough blur behind it to hold
+   the lettering on a busy spread, little enough tint to keep the frame
+   reading through it. */
+.btn--pill {
+  border-radius: 999px;
+  padding: 1em 2em;
+  border-color: rgba(255,255,255,.55);
+  color: var(--ink);
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  box-shadow: 0 1px 14px rgba(24,25,23,.09);
 }
-.btn--ghost:hover { background: var(--ink); color: var(--ivory); border-color: var(--ink); }
+.btn--pill:hover {
+  background: rgba(255,255,255,.46);
+  border-color: rgba(255,255,255,.8);
+  color: var(--ink);
+}
+/* No blur support: a flatter tint, which still reads over a photograph. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn--pill { background: rgba(247,243,236,.84); }
+}
 .link { border: 0; padding: 0; color: var(--sage); }
 .link:hover { background: none; color: var(--green); }
 
 /* ------------------------------- header ----------------------------- */
+/* No bar behind it. The mark and the menu sit directly on the hero, and
+   the clip keeps its own pale surface up at that height on every frame -
+   the book's top edge never rises past about a third of the way down - so
+   there is nothing for them to lose contrast against. The one exception is
+   the open mobile menu, which brings its own panel with it. */
 .head {
   position: fixed; inset: 0 0 auto; z-index: 100; height: var(--head-h);
-  transition: background .35s, box-shadow .35s;
+  transition: background .35s;
 }
-.head.is-solid { background: rgba(243,241,234,.92); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--line); }
 .head__in { height: 100%; width: min(1240px, 100% - var(--gut) * 2); margin-inline: auto;
             display: flex; align-items: center; gap: 24px; }
 .head__logo img { width: auto; height: 26px; }
@@ -143,10 +165,22 @@ p { margin: 0 0 1.1em; }
   position: absolute; z-index: 2; left: 50%;
   transform: translateX(-50%);
   display: block;
-  width: min(100vw, calc(100svh * 1080 / 1920));
+  /* Full width on a phone held upright, which is what the clip was shot
+     for. The 48svh cap only bites on a short screen, and it is what keeps
+     the book's top edge below about 37% of the stage however short that
+     screen is - the headline sits above that line. Whatever the cap leaves
+     at the sides, the blurred fill covers. */
+  width: min(100vw, 48svh);
   height: auto;
   bottom: 0;                        /* the slack goes above, where the frame
                                        is only surface and the blur covers it */
+  /* The fill behind it is the same frame stretched to a different shape, so
+     the two do not line up and the frame's top edge showed as a step across
+     the stage. Fading that edge out over the top twelfth turns the step
+     into a gradient. Nothing is lost: the book's own top edge is a quarter
+     of the way down the frame, so this only ever touches surface. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 8%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 8%);
 }
 
 /* ----------------------------- the words ---------------------------- */
@@ -157,16 +191,19 @@ p { margin: 0 0 1.1em; }
   opacity: var(--heroFade, 1); transition: opacity .25s linear;
   left: var(--gut); right: var(--gut);
   top: calc(var(--head-h) + 2.5svh);
+  text-align: center;
 }
 .hero > * { pointer-events: auto; }
 .hero__title {
   font-family: var(--display); font-weight: 400; line-height: 1.08;
   letter-spacing: -0.012em; color: var(--ink);
-  font-size: clamp(1.75rem, 8.2vw, 2.6rem);
-  margin: 0 0 .75rem;
-  /* No character cap here. At this size 11ch came out around half the
-     column and broke the line four ways; the gutters already hold it to a
-     sensible measure, and balance evens out what is left. */
+  /* Sized against the viewport's HEIGHT as well as its width. Width alone
+     is what let it clip: on a short screen the frame fills more of the
+     stage, the book's top edge rides up, and a headline set only from vw
+     ran straight into it. */
+  font-size: clamp(1.3rem, min(7.6vw, 4.4svh), 2.5rem);
+  margin: 0 0 .7rem;
+  max-width: 20ch; margin-inline: auto;
   text-wrap: balance;
 }
 .hero__kicker {
@@ -174,18 +211,19 @@ p { margin: 0 0 1.1em; }
   letter-spacing: .3em; text-transform: uppercase;
   font-weight: 500; color: var(--sage);
 }
-.hero__rule { width: 48px; height: 1px; background: var(--stone); margin-top: 1rem; }
+.hero__rule { width: 48px; height: 1px; background: var(--stone); margin: 1rem auto 0; }
 
 .hero__scroll {
-  position: absolute; z-index: 3; left: var(--gut); bottom: 5svh; margin: 0;
-  font-size: .6rem; letter-spacing: .3em; text-transform: uppercase;
-  font-weight: 500; color: var(--ink);
+  position: absolute; z-index: 3; left: 0; right: 0; bottom: 4.5svh; margin: 0;
+  text-align: center;
+  font-size: .58rem; letter-spacing: .32em; text-transform: uppercase;
+  font-weight: 400; color: rgba(24, 25, 23, .42);
   opacity: var(--cueFade, 1); transition: opacity .3s linear;
   pointer-events: none;
 }
 .hero__scroll::after {
-  content: ""; display: block; width: 1px; height: 34px; margin: 10px 0 0 2px;
-  background: linear-gradient(var(--ink), rgba(24,25,23,0));
+  content: ""; display: block; width: 1px; height: 30px; margin: 10px auto 0;
+  background: linear-gradient(rgba(24,25,23,.32), rgba(24,25,23,0));
 }
 
 /* --------------------------- the gallery CTA ------------------------ */
@@ -193,8 +231,8 @@ p { margin: 0 0 1.1em; }
    arrives, so the two never share the corner. */
 .album__cta {
   position: absolute; z-index: 3; left: var(--gut); right: var(--gut);
-  bottom: 4.5svh;
-  display: grid; justify-items: start; gap: 10px;
+  bottom: 4.5svh; text-align: center;
+  display: grid; justify-items: center; gap: 10px;
   opacity: 0; pointer-events: none; transition: opacity .45s ease;
 }
 .album__cta.is-on { opacity: 1; pointer-events: auto; }
@@ -218,6 +256,7 @@ p { margin: 0 0 1.1em; }
   }
   .hero__title { font-size: clamp(2.4rem, 4.2vw, 3.9rem); max-width: none; }
   .album__cta { left: var(--gut); right: auto; width: min(44vw, 560px); bottom: 8svh; }
+  .hero__scroll { left: var(--gut); right: auto; width: min(44vw, 560px); }
 }
 
 
