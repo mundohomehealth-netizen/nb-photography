@@ -17,7 +17,11 @@
   --display: "Playfair Display", Georgia, serif;
   --sans: "Montserrat", "Segoe UI", system-ui, sans-serif;
 
-  --head-h: 76px;
+  /* Only ever an overlay now - nothing sits behind it and nothing is laid
+     out under it - so it needs no more height than the mark itself. The
+     clip takes the rest, which is what the hero's headroom is measured
+     against. */
+  --head-h: 58px;
   --gut: clamp(20px, 5vw, 64px);
 }
 
@@ -130,9 +134,23 @@ p { margin: 0 0 1.1em; }
   --stopH: 88svh;
   position: relative;
   height: calc(7 * var(--stopH));
-  background: var(--sand);
+  /* A phone taller than 9:16 leaves a little below the frame. It reads as
+     the page carrying on under the image rather than as a band, so it takes
+     the page's own colour, not the hero's. */
+  background: var(--paper);
 }
-.album__stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+/* The stage IS the frame on a phone: full width, 9:16, starting at the very
+   top of the page with the mark and the menu lying on top of it. Sizing it
+   this way is what removes the blurred band - there is no longer any margin
+   for a fill to cover, because the stage has the frame's own shape.
+
+   The cap only matters in landscape, where a full-width frame would be
+   taller than the window; portrait phones are all narrower than 9:16, so
+   the first term always wins there. */
+.album__stage {
+  position: sticky; top: 0; overflow: hidden;
+  height: min(calc(100vw * 1920 / 1080), 100svh);
+}
 .album__snaps { position: absolute; inset: 0; pointer-events: none; }
 .album__stop { display: block; height: var(--stopH); }
 
@@ -148,6 +166,11 @@ p { margin: 0 0 1.1em; }
    position, on every viewport - which a flat colour or a hand-matched
    gradient cannot do, because the top edge of these frames runs from cream
    on the left to deep shade on the right. */
+/* Both are off on a phone. They exist to fill the margin a 9:16 frame
+   leaves in a window that is not 9:16, and on a phone the stage now has
+   the frame's shape, so there is no margin and nothing to fill. The wide
+   layout still needs them. */
+.album__fill, .album__wash { display: none; }
 .album__fill {
   position: absolute; inset: 0; z-index: 0;
   width: 100%; height: 100%;
@@ -165,22 +188,15 @@ p { margin: 0 0 1.1em; }
   position: absolute; z-index: 2; left: 50%;
   transform: translateX(-50%);
   display: block;
-  /* Full width on a phone held upright, which is what the clip was shot
-     for. The 48svh cap only bites on a short screen, and it is what keeps
-     the book's top edge below about 37% of the stage however short that
-     screen is - the headline sits above that line. Whatever the cap leaves
-     at the sides, the blurred fill covers. */
-  width: min(100vw, 48svh);
+  width: 100%;
   height: auto;
-  bottom: 0;                        /* the slack goes above, where the frame
-                                       is only surface and the blur covers it */
-  /* The fill behind it is the same frame stretched to a different shape, so
-     the two do not line up and the frame's top edge showed as a step across
-     the stage. Fading that edge out over the top twelfth turns the step
-     into a gradient. Nothing is lost: the book's own top edge is a quarter
-     of the way down the frame, so this only ever touches surface. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 8%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 8%);
+  top: 0;                           /* flush with the top of the page */
+  /* A page taller than 9:16 leaves a little below the frame, and the
+     frame's bottom row is a good deal warmer than the page is, so the join
+     showed as a line. The last few percent fade into it instead. That part
+     of every frame is surface and foliage, well below the book. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 93%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 93%, transparent 100%);
 }
 
 /* ----------------------------- the words ---------------------------- */
@@ -190,28 +206,31 @@ p { margin: 0 0 1.1em; }
   position: absolute; z-index: 3; pointer-events: none;
   opacity: var(--heroFade, 1); transition: opacity .25s linear;
   left: var(--gut); right: var(--gut);
-  top: calc(var(--head-h) + 2.5svh);
+  top: calc(var(--head-h) + 1.5svh);
   text-align: center;
 }
 .hero > * { pointer-events: auto; }
 .hero__title {
   font-family: var(--display); font-weight: 400; line-height: 1.08;
   letter-spacing: -0.012em; color: var(--ink);
-  /* Sized against the viewport's HEIGHT as well as its width. Width alone
-     is what let it clip: on a short screen the frame fills more of the
-     stage, the book's top edge rides up, and a headline set only from vw
-     ran straight into it. */
-  font-size: clamp(1.3rem, min(7.6vw, 4.4svh), 2.5rem);
-  margin: 0 0 .7rem;
-  max-width: 20ch; margin-inline: auto;
+  /* The headroom is what is above the book's top edge, and that edge sits
+     at 25.9% of a frame which is now 1.778 times the page's width - so the
+     room scales with vw, and so does this. Measured clearance at 375x812 is
+     18px, and it stays positive down to 320 wide.
+
+     The svh term still matters in landscape, where the frame is capped by
+     the window's height instead. */
+  font-size: clamp(1.1rem, min(6.4vw, 3.6svh), 2rem);
+  margin: 0 0 .45rem;
+  max-width: 28ch; margin-inline: auto;
   text-wrap: balance;
 }
 .hero__kicker {
-  margin: 0; font-size: clamp(.58rem, 2.9vw, .68rem);
+  margin: 0; font-size: clamp(.54rem, 2.7vw, .68rem); line-height: 1.4;
   letter-spacing: .3em; text-transform: uppercase;
   font-weight: 500; color: var(--sage);
 }
-.hero__rule { width: 48px; height: 1px; background: var(--stone); margin: 1rem auto 0; }
+.hero__rule { width: 44px; height: 1px; background: var(--stone); margin: .6rem auto 0; }
 
 .hero__scroll {
   position: absolute; z-index: 3; left: 0; right: 0; bottom: 4.5svh; margin: 0;
@@ -246,9 +265,20 @@ p { margin: 0 0 1.1em; }
    On a wide screen the same frame is held to the right at full height with
    the words beside it, and the blurred fill carries the rest of the width. */
 @media (min-width: 980px) {
+  /* A wide window is nothing like 9:16, so the stage goes back to filling
+     it, the frame is held to the right at full height, and the blurred fill
+     and its wash carry the rest of the width. The mask softens the frame's
+     top edge into that fill: the two are the same picture at different
+     shapes, so without it the edge reads as a step. */
+  /* on :root, not on .album - the header itself is outside the album */
+  :root { --head-h: 76px; }
+  .album__stage { height: 100svh; }
+  .album__fill, .album__wash { display: block; }
   .album__canvas {
-    left: auto; right: 0; transform: none;
+    left: auto; right: 0; top: 0; transform: none;
     width: min(46vw, calc(100svh * 1080 / 1920));
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 7%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 7%);
   }
   .hero {
     top: 50%; transform: translateY(-50%);
