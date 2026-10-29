@@ -250,7 +250,15 @@ p { margin: 0 0 1.1em; }
    arrives, so the two never share the corner. */
 .album__cta {
   position: absolute; z-index: 3; left: var(--gut); right: var(--gut);
-  bottom: 4.5svh; text-align: center;
+  /* A percentage of the stage, not of the window: on a phone the stage is
+     the frame, so this keeps the caption and the button in the same place
+     against the picture whatever the screen is.
+
+     The book's bottom edge sits at 77% of the frame on every one of the
+     seven stops, so the band under it is the last 23%. 9% puts the pair
+     high in that band with about a line's gap under the book, rather than
+     floating in the middle of it. */
+  bottom: 9%; text-align: center;
   display: grid; justify-items: center; gap: 10px;
   opacity: 0; pointer-events: none; transition: opacity .45s ease;
 }
