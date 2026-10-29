@@ -23,6 +23,18 @@ desktop.ini
 /frames_v4/
 /frames_v4_xl/
 
+# v7 render output: the PNG masters for the three-quarter re-shoot, plus the
+# shadow pass. Both are regenerable with render_v7.py, and what the site
+# serves - the WebP tiers under narratedbynb-site/assets/frames/ - IS tracked.
+/frames_v7/
+/frames_v7_shadow/
+
+# Full-resolution stills pulled out of the hero clip by extract_hero.py.
+# 245 PNGs at 1080x1920, about 470MB, and regenerable from the clip in a
+# couple of minutes. The WebP tiers the site serves, under
+# narratedbynb-site/assets/hero/, ARE tracked.
+/frames_hero/
+
 # pulled in locally for the sharp-based texture/frame scripts
 /node_modules/
 /package-lock.json

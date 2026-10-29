@@ -6,6 +6,9 @@
   --stone: #B5AA98;
   --green: #2F3329;
 
+  /* The hero's surface is warmer and heavier than the page below it - the
+     reference's backdrop is closer to unbleached paper than to white. */
+  --sand: #EFE7DA;
   --paper: var(--ivory);
   --ink: var(--charcoal);
   --muted: #6d6a61;
@@ -98,75 +101,124 @@ p { margin: 0 0 1.1em; }
 .burger { display: none; }
 
 /* =============================== ALBUM ============================== */
-/* The stops are what the scroll snaps to. One stop per spread means a
-   gesture always lands on a settled page, never mid-turn. */
-/* The section carries an explicit height; the stage is a plain sticky child.
-   The earlier version gave the stage margin-bottom:-100svh to cancel its own
-   height, which left it with a zero-height margin box - and a sticky element
-   with no height never releases, so it went on painting over the sections
-   below it. */
-.album { position: relative; height: 600svh; background: var(--paper); }
+/* Seven stops - the closed cover and the six spreads - so six turns of
+   travel. The per-stop height is a little under a screen so the whole
+   album does not feel like six separate pages to get past. */
+.album {
+  --stopH: 88svh;
+  position: relative;
+  height: calc(7 * var(--stopH));
+  background: var(--sand);
+}
 .album__stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 .album__snaps { position: absolute; inset: 0; pointer-events: none; }
-.album__stop { display: block; height: 100svh; }
-/* Setting both a height and a max-width constrained the box on both axes, and
-   a canvas simply stretches its bitmap to whatever box it is given - which is
-   what skewed the book on a phone. Width alone is set, and aspect-ratio keeps
-   the frame honest. */
-/* Centred absolutely, not by the grid: the grid sized its column to the
-   canvas, so centring within it was a no-op and an oversized canvas just hung
-   off one side. This stays centred however far it overflows - which it is
-   meant to do while the book is closed. */
+.album__stop { display: block; height: var(--stopH); }
+
+/* ------------------------------ the book ---------------------------- */
+/* The clip carries its own surface, light and shadow, so there is no
+   backdrop to build here any more - no gradients, no grain layer, no
+   separate shadow pass. What the page has to solve instead is shape: the
+   frames are 9:16 and a browser window never is.
+
+   The fill canvas takes the same frame, drawn into a 160px bitmap, and is
+   stretched over the whole stage under a heavy blur. Whatever margin the
+   frame leaves is then filled with the frame's own colour, at its own
+   position, on every viewport - which a flat colour or a hand-matched
+   gradient cannot do, because the top edge of these frames runs from cream
+   on the left to deep shade on the right. */
+.album__fill {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%;
+  filter: blur(34px) saturate(1.04);
+  transform: scale(1.12);          /* past the blur's soft edge */
+}
+.album__wash {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: rgba(240, 232, 219, .42);
+}
+
+/* Fitted, never cropped: an open spread runs very nearly the full width of
+   the frame, so trimming the sides would cut the book itself. */
 .album__canvas {
-  position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, calc(-50% - var(--shift, 0px)));
+  position: absolute; z-index: 2; left: 50%;
+  transform: translateX(-50%);
   display: block;
-  aspect-ratio: 1400 / 1050;
-  width: min(100vw, calc(72svh * 4 / 3));
+  width: min(100vw, calc(100svh * 1080 / 1920));
   height: auto;
+  bottom: 0;                        /* the slack goes above, where the frame
+                                       is only surface and the blur covers it */
 }
 
-/* Narrow screens stack both lines above the book; book.js measures how far
-   down they reach and keeps the cover clear of them. */
-.album__intro {
-  position: absolute; left: 0; right: 0; text-align: center;
-  margin: 0; padding: 0 var(--gut); pointer-events: none;
-  opacity: var(--introFade, 1); transition: opacity .25s linear;
-  font-size: .78rem; letter-spacing: .24em; text-transform: uppercase;
-  font-weight: 500; line-height: 1.9;
+/* ----------------------------- the words ---------------------------- */
+/* The book's top edge sits a quarter of the way down the frame, so the band
+   above it is clear - that is where this goes. */
+.hero {
+  position: absolute; z-index: 3; pointer-events: none;
+  opacity: var(--heroFade, 1); transition: opacity .25s linear;
+  left: var(--gut); right: var(--gut);
+  top: calc(var(--head-h) + 2.5svh);
 }
-.album__intro--left { top: calc(var(--head-h) + 3.5svh); color: var(--sage); }
-.album__intro--left .eyebrow { margin: 0; font-size: inherit; letter-spacing: inherit; }
-.album__intro--left br { display: none; }
-.album__intro--right { top: calc(var(--head-h) + 10svh); color: var(--stone); font-size: .68rem; }
+.hero > * { pointer-events: auto; }
+.hero__title {
+  font-family: var(--display); font-weight: 400; line-height: 1.08;
+  letter-spacing: -0.012em; color: var(--ink);
+  font-size: clamp(1.75rem, 8.2vw, 2.6rem);
+  margin: 0 0 .75rem;
+  /* No character cap here. At this size 11ch came out around half the
+     column and broke the line four ways; the gutters already hold it to a
+     sensible measure, and balance evens out what is left. */
+  text-wrap: balance;
+}
+.hero__kicker {
+  margin: 0; font-size: clamp(.58rem, 2.9vw, .68rem);
+  letter-spacing: .3em; text-transform: uppercase;
+  font-weight: 500; color: var(--sage);
+}
+.hero__rule { width: 48px; height: 1px; background: var(--stone); margin-top: 1rem; }
 
-/* Wide screens put one phrase either side of the book, on the empty canvas
-   the portrait cover leaves in a 4:3 frame. */
-@media (min-width: 980px) {
-  .album__canvas { width: min(96vw, calc(88svh * 4 / 3)); }
-  .album__intro {
-    top: 50%; transform: translateY(-50%);
-    width: min(22vw, 260px); padding: 0;
-  }
-  .album__intro--left  { left: var(--gut); right: auto; text-align: left; }
-  .album__intro--left br { display: inline; }
-  .album__intro--right { right: var(--gut); left: auto; text-align: right; }
+.hero__scroll {
+  position: absolute; z-index: 3; left: var(--gut); bottom: 5svh; margin: 0;
+  font-size: .6rem; letter-spacing: .3em; text-transform: uppercase;
+  font-weight: 500; color: var(--ink);
+  opacity: var(--cueFade, 1); transition: opacity .3s linear;
+  pointer-events: none;
+}
+.hero__scroll::after {
+  content: ""; display: block; width: 1px; height: 34px; margin: 10px 0 0 2px;
+  background: linear-gradient(var(--ink), rgba(24,25,23,0));
 }
 
+/* --------------------------- the gallery CTA ------------------------ */
+/* Bottom left, where the scroll cue was: the cue has faded by the time this
+   arrives, so the two never share the corner. */
 .album__cta {
-  position: absolute; left: 50%; bottom: 5svh; transform: translateX(-50%);
-  display: grid; justify-items: center; gap: 12px; text-align: center;
-  /* It arrives once, as the cover opens, and then stays - only its title
-     changes. Fading it per spread was what made the scroll feel like it
-     stuttered. */
+  position: absolute; z-index: 3; left: var(--gut); right: var(--gut);
+  bottom: 4.5svh;
+  display: grid; justify-items: start; gap: 10px;
   opacity: 0; pointer-events: none; transition: opacity .45s ease;
 }
 .album__cta.is-on { opacity: 1; pointer-events: auto; }
 .album__caption {
-  transition: opacity .2s;
-  margin: 0; font-family: var(--display); font-style: italic; font-size: 1.05rem; color: var(--muted);
+  transition: opacity .2s; margin: 0;
+  font-family: var(--display); font-style: italic; font-size: 1rem; color: var(--ink);
 }
 
+/* ------------------------------- layout ----------------------------- */
+/* The clip is shot for a phone, and that is what this page is built around.
+   On a wide screen the same frame is held to the right at full height with
+   the words beside it, and the blurred fill carries the rest of the width. */
+@media (min-width: 980px) {
+  .album__canvas {
+    left: auto; right: 0; transform: none;
+    width: min(46vw, calc(100svh * 1080 / 1920));
+  }
+  .hero {
+    top: 50%; transform: translateY(-50%);
+    left: var(--gut); right: auto; width: min(44vw, 560px);
+  }
+  .hero__title { font-size: clamp(2.4rem, 4.2vw, 3.9rem); max-width: none; }
+  .album__cta { left: var(--gut); right: auto; width: min(44vw, 560px); bottom: 8svh; }
+}
 
 
 /* ============================== sections ============================ */
@@ -281,7 +333,6 @@ p { margin: 0 0 1.1em; }
   .head.menu-open { background: var(--ivory); }
 
   .grid { grid-template-columns: 1fr; }
-  .album__canvas { width: 100vw; }
   .lb__nav { width: 38px; height: 38px; }
   .lb__fig img { max-height: 58svh; }
 }
@@ -290,34 +341,36 @@ p { margin: 0 0 1.1em; }
    frames follow the scroll rather than being carried to the next spread. */
 
 /* ============================ boot sequence =========================== */
-/* --bootScale is how much larger the mark starts than the deboss it lands
-   on; book.js measures the canvas and sets it. The fallback is sized for a
-   typical desktop so the sequence still reads if the script never runs. */
+/* The mark arrives large, then shrinks onto the debossed mark on the closed
+   cover and fades into it. The album opens on that cover again now that the
+   frames come from the clip, so there is something for it to land on.
+
+   book.js positions and sizes it against the CANVAS, not the veil: the frame
+   is anchored to the bottom of the stage and the deboss is above its middle
+   and right of centre, so anything centred in the window lands low and left.
+   --bootScale is how much larger it starts than where it lands; the fallback
+   is sized for a phone so the sequence still reads if the script never runs. */
 .boot {
   position: fixed; inset: 0; z-index: 400;
-  background: var(--ivory);
-  animation: bootVeil 2.5s ease forwards;
+  background: var(--sand);
+  animation: bootVeil 2.3s ease forwards;
 }
-/* Positioned by book.js against the canvas, not centred in the veil: the
-   canvas is shifted up to clear the header, and the deboss is a touch right
-   of the frame centre, so a viewport-centred mark lands low and left.
-   transform-origin stays central so the scale collapses onto that point. */
 .boot__logo {
   position: absolute; height: auto;
-  width: var(--bootTarget, 230px);
+  width: var(--bootTarget, 190px);
   transform-origin: 50% 50%;
-  transform: scale(var(--bootScale, 2.6));
-  animation: bootMark 2.5s cubic-bezier(.22,.72,.24,1) forwards;
+  transform: scale(var(--bootScale, 2.4));
+  animation: bootMark 2.3s cubic-bezier(.22,.72,.24,1) forwards;
 }
 @keyframes bootMark {
-  0%   { opacity: 0; transform: scale(var(--bootScale, 2.6)) translateY(10px); }
-  20%  { opacity: 1; transform: scale(var(--bootScale, 2.6)) translateY(0); }
-  40%  { opacity: 1; }
-  92%  { opacity: 0.06; }
+  0%   { opacity: 0; transform: scale(var(--bootScale, 2.4)) translateY(10px); }
+  20%  { opacity: 1; transform: scale(var(--bootScale, 2.4)) translateY(0); }
+  42%  { opacity: 1; }
+  92%  { opacity: .06; }
   100% { opacity: 0; transform: scale(1); }
 }
 @keyframes bootVeil {
-  0%, 46% { opacity: 1; visibility: visible; }
+  0%, 48% { opacity: 1; visibility: visible; }
   88%     { opacity: 0; visibility: visible; }
   100%    { opacity: 0; visibility: hidden; pointer-events: none; }
 }

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
-<link rel="preload" as="image" href="assets/frames/desktop/0001.webp">
+<link rel="preload" as="image" href="assets/hero/md/0001.webp">
 </head>
 <body>
 <!-- The mark arrives, then shrinks into the place the cover carries it,
@@ -49,25 +49,37 @@
 </header>
 
 <!-- ============================ THE ALBUM ============================ -->
-<!-- Six stops, one per spread. Scroll snapping is what makes a gesture
-     land on a settled page instead of halfway through a turn. -->
+<!-- Seven stops: the closed cover, then the six spreads it opens onto.
+     The frames come from the hero clip, cut down by extract_hero.py - the
+     count and the stop list below are what its manifest reports, and the
+     manifest ships alongside the frames so the two can be checked. -->
 <section class="album" id="top" data-album
-         data-frames="assets/frames/" data-count="292"
-         data-stops="1,76,129,181,233,285">
+         data-frames="assets/hero/" data-count="245"
+         data-stops="1,66,97,135,171,209,241">
   <div class="album__stage">
-    <canvas class="album__canvas" data-canvas width="1400" height="1050"
-      role="img" aria-label="A leather wedding album opening and turning through five spreads"></canvas>
+    <!-- A heavily blurred copy of the same frame, stretched to fill whatever
+         the viewport is. The clip is 9:16 and a window never is, so something
+         has to fill the margin; a blur of the frame itself always matches it,
+         where a flat colour or a guessed gradient leaves a seam. -->
+    <canvas class="album__fill" data-fill width="160" height="284" aria-hidden="true"></canvas>
 
-    <!-- No wordmark here: the cover already carries the mark, debossed.
-         Repeating it over the top just prints the logo on itself. -->
-    <h1 class="album__intro album__intro--left" data-intro>
-      <span class="eyebrow">Timeless stories.<br>Beautifully told.</span>
-      <span class="sr">NarratedByNB — Wedding Photography</span>
-    </h1>
-    <p class="album__intro album__intro--right" data-intro>Wedding Photography</p>
+    <!-- Calms the blur. Without it the fill reads as a smeared photograph
+         rather than as the room the book is sitting in, which is very
+         obvious on a wide screen where most of the stage is fill. -->
+    <div class="album__wash" aria-hidden="true"></div>
 
+    <canvas class="album__canvas" data-canvas width="1080" height="1920"
+      role="img" aria-label="A leather wedding album opening and turning through six spreads"></canvas>
 
-    <!-- one per spread; the player shows the right one and hides it mid-turn -->
+    <div class="hero">
+      <h1 class="hero__title">Every love story deserves its own chapter.</h1>
+      <p class="hero__kicker">Wedding Photography</p>
+      <div class="hero__rule" aria-hidden="true"></div>
+    </div>
+
+    <!-- Nothing to open a gallery of until the cover is; the player brings
+         this in as the album reaches its first spread, and the scroll cue
+         goes out as it arrives. -->
     <div class="album__cta" data-cta aria-hidden="true">
       <p class="album__caption" data-caption></p>
       <button class="btn btn--ghost" type="button" data-open-gallery>
@@ -75,12 +87,14 @@
       </button>
     </div>
 
+    <p class="hero__scroll" data-cue aria-hidden="true">Scroll</p>
   </div>
-  <!-- Snap targets only. Taken out of flow so the section height stays
-       explicit and the sticky stage releases at the right point. -->
+  <!-- Snap targets only. Out of flow, so the section height stays explicit
+       and the sticky stage releases at the right point. -->
   <div class="album__snaps" aria-hidden="true">
     <i class="album__stop"></i><i class="album__stop"></i><i class="album__stop"></i>
     <i class="album__stop"></i><i class="album__stop"></i><i class="album__stop"></i>
+    <i class="album__stop"></i>
   </div>
 </section>
 

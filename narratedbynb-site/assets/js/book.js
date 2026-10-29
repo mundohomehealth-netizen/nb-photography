@@ -1,27 +1,30 @@
 /* The album hero.
  *
- * The scroll does not drive the frames freely. The section is six full-height
- * stops, one per settled spread, and CSS scroll snapping makes the browser
- * land on one of them. That is what gives "a gesture completes a flip": you
- * can drag through the middle of a turn, but you cannot come to rest there -
- * the snap carries you forward or back to a settled page. Doing it with native
- * snapping rather than by intercepting wheel events keeps trackpad momentum,
- * touch, keyboard and the scrollbar all working as they should.
+ * The frames are a cut of the hero clip - the closed cover, the case opening,
+ * and six spreads with a page turn between each - renumbered so there are no
+ * dead stretches. The section is seven stops; between two of them the scroll
+ * position maps straight onto that turn's frame range.
  *
- * Between two stops the scroll position maps onto the frame range for that
- * turn, eased, so the page sweeps over rather than running at a constant rate.
+ * Two canvases are painted from the same frame. The front one is the frame
+ * itself, fitted so an open spread is never cropped. The back one is the same
+ * image drawn into a 160px bitmap and stretched over the whole stage under a
+ * CSS blur, which fills whatever margin a 9:16 frame leaves in a window that
+ * is never 9:16. It costs one extra drawImage into a tiny canvas per frame.
+ *
+ * Sizing is left to CSS; the media queries live in the stylesheet and there
+ * is no measuring here beyond picking a bitmap tier and placing the opening
+ * mark.
  */
 (function () {
   var section = document.querySelector("[data-album]");
   if (!section) return;
 
-  /* Browsers restore the previous scroll position on reload, which dropped the
-     visitor into the middle of an open spread with no idea how they got there.
-     The album is meant to start closed. */
+  /* Browsers restore the previous scroll position on reload, which dropped
+     the visitor into the middle of a turn with no idea how they got there.
+     The album is meant to start on the closed cover. */
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   // One reset is not enough: the restore can land after load, and a bfcache
-  // return skips load altogether. Held briefly instead, then released so the
-  // visitor can scroll normally.
+  // return skips load altogether. Held briefly, then released.
   var holdUntil = 0;
   function toTop() { window.scrollTo(0, 0); }
   function holdTop(ms) {
@@ -40,83 +43,77 @@
 
   var canvas = section.querySelector("[data-canvas]");
   var ctx = canvas.getContext("2d");
-  var intro = section.querySelector("[data-intro]");
-  var cue = section.querySelector("[data-cue]");
+  var fill = section.querySelector("[data-fill]");
+  var fctx = fill ? fill.getContext("2d") : null;
   var cta = section.querySelector("[data-cta]");
   var caption = section.querySelector("[data-caption]");
 
-  var COUNT = parseInt(section.getAttribute("data-count"), 10) || 292;
-  var BASE = section.getAttribute("data-frames") || "assets/frames/";
+  var COUNT = parseInt(section.getAttribute("data-count"), 10) || 245;
+  var BASE = section.getAttribute("data-frames") || "assets/hero/";
   var STOPS = section.getAttribute("data-stops").split(",").map(Number);
   var SEGMENTS = STOPS.length - 1;
 
-  /* What each spread is, for the caption and the gallery that opens from it. */
+  /* Stop 1 is the closed cover, so the spreads begin at stop 2. */
   var SPREADS = [
     { title: "Petals & prayers", note: "The ceremony" },
     { title: "Quiet grace", note: "Portraits" },
-    { title: "The two of you", note: "Together" },
-    { title: "Light & detail", note: "The bride" },
-    { title: "Golden hour", note: "After the day" }
+    { title: "In full colour", note: "The bride" },
+    { title: "Golden hour", note: "After the day" },
+    { title: "Soft light", note: "Portraits" },
+    { title: "Under the marigolds", note: "Celebration" }
   ];
 
   /* The canvas is laid out in CSS pixels but painted in device pixels, so the
-     bitmap has to be chosen against both. Picking on screen size alone left a
-     retina laptop upscaling a 1400px frame by about 1.7, which is why the book
-     looked soft next to the rest of the page. */
+     bitmap is chosen against the box CSS actually gave it times the display
+     density. Picking on viewport alone left a phone at 3x upscaling. */
   var TIERS = [
-    { dir: "mobile/", w: 840, h: 630 },
-    { dir: "desktop/", w: 1400, h: 1050 },
-    { dir: "xl/", w: 2400, h: 1800 }
+    { dir: "sm/", w: 540 },
+    { dir: "md/", w: 810 },
+    { dir: "lg/", w: 1080 }
   ];
   function pickTier() {
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var byHeight = (Math.max(vh * 0.45, vh - 250) / 0.926) * (4 / 3);
-    // the widest the canvas ever gets, which is while the book is closed
-    var widest = Math.max(Math.min((vw * 0.74) / 0.486, byHeight),
-                          Math.min((vw * 0.92) / 0.917, byHeight));
-    var need = widest * dpr;
+    var box = canvas.getBoundingClientRect().width || window.innerWidth;
+    var need = box * Math.min(window.devicePixelRatio || 1, 3);
     for (var i = 0; i < TIERS.length; i++) if (TIERS[i].w >= need) return TIERS[i];
     return TIERS[TIERS.length - 1];
   }
   var tier = pickTier();
   var DIR = BASE.replace(new RegExp("/?$"), "/") + tier.dir;
-  var IMG_W = tier.w, IMG_H = tier.h;
+  var IMG_W = tier.w, IMG_H = Math.round(tier.w * 1920 / 1080);
   canvas.width = IMG_W; canvas.height = IMG_H;
 
-  var frames = new Array(COUNT), ready = new Array(COUNT);
-  var drawn = -1, rafId = 0, state = 0, shownSpread = -1;
+  var frames = new Array(COUNT + 1), ready = new Array(COUNT + 1);
+  var drawn = -1, rafId = 0, state = -1, shownSpread = -1;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function src(i) { return DIR + String(i).padStart(4, "0") + ".webp"; }
 
   function load(i) {
     if (frames[i]) return;
     var im = new Image();
     im.decoding = "async";
-    im.onload = function () { ready[i] = true; drawn = -1; tick(); };
-    im.src = src(i);
+    im.onload = function () { ready[i] = true; drawn = -1; request(); };
+    im.src = DIR + String(i).padStart(4, "0") + ".webp";
     frames[i] = im;
   }
 
-  /* The settled frames first - those are what a reader actually stops on -
-     then a coarse pass, then everything, so a fast scroll always has
-     something close to show.
-  
-     The bulk pass waits for the opening sequence. Decoding 292 frames saturates
-     the main thread, which delayed the boot animation and the animationend that
-     clears it: the mark sat there for ten seconds or more on a cold load. */
+  /* The settled frames first - those are what a reader stops on - then a
+     coarse pass, then everything, so a fast scroll always has something
+     close to show. The bulk pass waits for the opening animation: decoding
+     the whole sequence saturates the main thread, which was what left the
+     mark sitting on screen for ten seconds on a cold load. */
   STOPS.forEach(load);
   var bulkStarted = false;
   function preloadRest() {
     if (bulkStarted) return;
     bulkStarted = true;
-    var order = [], step, i;
-    for (step of [8, 4, 2, 1]) for (i = 1; i <= COUNT; i += step) order.push(i);
+    var order = [], i, s;
+    var steps = [8, 4, 2, 1];
+    for (s = 0; s < steps.length; s++) {
+      for (i = 1; i <= COUNT; i += steps[s]) order.push(i);
+    }
     var k = 0;
     (function next() {
-      for (var n = 0; k < order.length && n < 12; n++) load(order[k++]);
-      if (k < order.length) setTimeout(next, 28);
+      for (var n = 0; k < order.length && n < 10; n++) load(order[k++]);
+      if (k < order.length) setTimeout(next, 30);
     })();
   }
 
@@ -126,49 +123,6 @@
       if (i + d <= COUNT && ready[i + d]) return i + d;
     }
     return -1;
-  }
-
-  function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-
-  /* Measured off the frames: the closed book takes 48.6% of the frame width,
-     an open spread 91.7%, and both about 92.6% of its height. A closed book
-     can therefore be drawn far larger than an open one before anything runs
-     off the screen - which is the difference between a phone showing a decent
-     book and a postage stamp. The canvas is sized between those two as the
-     cover opens, so it reads as the album coming toward you. */
-  var CLOSED_SHARE = 0.486, OPEN_SHARE = 0.917, H_SHARE = 0.926;
-  var TOP_CHROME = 100, BOT_CHROME = 150;   // header + a gap, title + button + a gap
-  var sizedAt = -1;
-  var placeBoot = null;          // set by boot(), below
-  function sizeCanvas(t) {
-    if (Math.abs(t - sizedAt) < 0.004) return;
-    sizedAt = t;
-    var vw = window.innerWidth, vh = window.innerHeight;
-    // The book has to clear the fixed header above it and the spread title and
-    // gallery button below it. Budgeting against the full viewport height ran
-    // the cover under the nav and put the button on the leather. The band is
-    // not centred on the screen either, so the canvas is nudged up by half the
-    // difference rather than being centred on the viewport.
-    // When the two phrases stack above the book they take a variable amount of
-    // room, so the clearance is measured rather than assumed - a fixed figure
-    // is what let the text clip the cover on tablets.
-    var top = TOP_CHROME;
-    if (!window.matchMedia("(min-width: 980px)").matches) {
-      var lowest = 0;
-      [].forEach.call(section.querySelectorAll(".album__intro"), function (el) {
-        lowest = Math.max(lowest, el.getBoundingClientRect().bottom);
-      });
-      if (lowest) top = Math.max(TOP_CHROME, lowest + 18);
-    }
-    var band = Math.max(vh * 0.45, vh - top - BOT_CHROME);
-    var byHeight = (band / H_SHARE) * (4 / 3);
-    canvas.style.setProperty("--shift", ((BOT_CHROME - top) / 2) + "px");
-    // different margins either side of the turn: a closed book wants air
-    // around it, an open spread wants the width it can get
-    var closed = Math.min((vw * 0.74) / CLOSED_SHARE, byHeight);
-    var open = Math.min((vw * 0.92) / OPEN_SHARE, byHeight);
-    canvas.style.width = (closed + (open - closed) * t) + "px";
-    if (placeBoot) placeBoot();  // the mark is positioned off this box
   }
 
   function progress() {
@@ -191,61 +145,68 @@
     var i = Math.min(SEGMENTS - 1, Math.floor(seg));
     var t = seg - i;
 
-    sizeCanvas(easeInOut(Math.min(1, seg)));
-
     // Linear within a segment, deliberately. Easing here flattens the rate to
     // zero at both ends of every turn, which under a steady scroll reads as
-    // the book stopping at each spread. The renders already carry their own
-    // hold frames, so the settling is in the footage rather than the mapping.
+    // the book stopping. The cut already keeps a beat of stillness at each
+    // spread, so the settling is in the footage rather than in the mapping.
     var want = Math.round(STOPS[i] + (STOPS[i + 1] - STOPS[i]) * t);
+
     var use = nearest(want);
     if (use > 0 && use !== drawn) {
-      ctx.clearRect(0, 0, IMG_W, IMG_H);           // the frames carry alpha
       ctx.drawImage(frames[use], 0, 0, IMG_W, IMG_H);
+      if (fctx) fctx.drawImage(frames[use], 0, 0, fill.width, fill.height);
       drawn = use;
     }
 
-    // The intro wordmark belongs to the closed book only.
-    section.style.setProperty("--introFade", String(Math.max(0, 1 - seg * 2.2)));
-    section.style.setProperty("--cueFade", String(Math.max(0, 1 - seg * 1.6)));
+    // Both belong to the closed cover. The cover swings up through the top
+    // of the frame as it opens, straight across the headline, so the words
+    // go before it gets there rather than being overlapped by it.
+    section.style.setProperty("--cueFade", String(Math.max(0, 1 - seg * 1.3)));
+    section.style.setProperty("--heroFade", String(Math.max(0, 1 - seg * 1.6)));
 
-    // The button stays put and only its title changes. Fading it in and out at
-    // every spread was the other thing making the scroll feel like it stuttered.
     var nearestStop = Math.round(seg);
     setState(nearestStop);
+
+    // There is nothing to show a gallery of until the cover is open, so the
+    // button arrives as the first spread lands and then stays, title
+    // changing. Fading it per spread was what made the scroll feel like it
+    // stuttered.
+    var open = seg > 0.85;
+    cta.classList.toggle("is-on", open);
+    cta.setAttribute("aria-hidden", String(!open));
+
     var which = Math.min(SPREADS.length, Math.max(1, nearestStop));
     if (which !== shownSpread) {
       shownSpread = which;
       if (caption) caption.textContent = SPREADS[which - 1].title;
       cta.setAttribute("data-spread", String(which));
     }
-    // There is nothing to show a gallery of until the cover is open, so it
-    // arrives once - as the cover lands - and then stays, title changing.
-    var open = seg > 0.8;
-    cta.classList.toggle("is-on", open);
-    cta.setAttribute("aria-hidden", String(!open));
   }
 
   function request() { if (!rafId) rafId = requestAnimationFrame(tick); }
 
   function fit() {
-    sizedAt = -1;
     drawn = -1;
+    if (placeBoot) placeBoot();
     request();
   }
 
-  /* Where the mark has to land, as fractions of the CANVAS - not the viewport.
-     The canvas is shifted up to sit between the header and the button, and the
-     cover is not quite centred in the frame, so anything centred on the window
-     lands low and slightly left.
+  /* Where the opening mark has to land, as fractions of the CANVAS - the
+     frame box, not the window. The canvas is anchored to the bottom of the
+     stage and can run past its top, so anything measured against the
+     viewport lands in the wrong place.
 
-     Derived from the scene (the mark is 46% of a cover that is 1.022 units wide
-     in a 2.213-unit frame) and confirmed against the render by band-passing
-     frame 1 to isolate the deboss: 0.1954 measured against 0.1985 derived, the
-     difference being the faintest edges falling under the threshold. */
-  var DEBOSS_W = 0.1985, DEBOSS_CX = 0.5035, DEBOSS_CY = 0.4995;
+     Read off frame 1: the cover occupies x 0.158-0.895 and y 0.259-0.771 of
+     the frame, and the mark sits above the middle of it. These three were
+     then checked by drawing the mark's box back onto the frame and nudged
+     until it sat over the deboss.
 
-  sizeCanvas(0);
+     They cannot be exact. The mark on the cover is about 1.34 times as wide
+     as it is tall and the logo file is 1.61, so the two lockups are not the
+     same drawing; matching the centre and the width is as close as it goes,
+     and the mark is fading out as it arrives. */
+  var DEBOSS_W = 0.202, DEBOSS_CX = 0.544, DEBOSS_CY = 0.400;
+  var placeBoot = null;
 
   (function boot() {
     var el = document.querySelector("[data-boot]");
@@ -258,14 +219,13 @@
       if (!r.width) return;
       var w = r.width * DEBOSS_W;
       var h = w / markAspect;
-      // placed against the canvas box, so it tracks the shift and the scaling
       mark.style.width = w + "px";
       mark.style.left = (r.left + r.width * DEBOSS_CX - w / 2) + "px";
       mark.style.top = (r.top + r.height * DEBOSS_CY - h / 2) + "px";
       // A fixed multiple of where it lands, so the travel reads the same on
-      // every screen. Absolute caps only come into play when the screen is too
+      // every screen. The absolute caps only matter when the screen is too
       // small to show the mark at that size.
-      var start = Math.min(w * 2.1, window.innerWidth * 0.78, window.innerHeight * 0.44);
+      var start = Math.min(w * 2.2, window.innerWidth * 0.74, window.innerHeight * 0.4);
       mark.style.setProperty("--bootScale", String(Math.max(1.2, start / w)));
     }
     placeBoot = size;
@@ -277,20 +237,16 @@
       preloadRest();
     }
     el.addEventListener("animationend", done);
-    // A CSS animation does not begin until the first paint, so a timer started
-    // at script time can expire before the sequence has even been seen - in a
-    // background tab that is seconds out. The fallback waits for a frame to be
-    // painted and only then starts its clock.
-    requestAnimationFrame(function () { setTimeout(done, 3000); });
-    // And a hard ceiling. If the page never paints - a tab left in the
-    // background, a window behind another - neither the animation nor the
-    // frame callback above ever runs, and without this the veil would cover
-    // the site indefinitely.
+    // A CSS animation does not begin until the first paint, so a timer
+    // started at script time can expire before the sequence has been seen.
+    // This one waits for a painted frame and only then starts its clock.
+    requestAnimationFrame(function () { setTimeout(done, 2800); });
+    // And a hard ceiling, for a tab that never paints at all.
     setTimeout(done, 8000);
   })();
 
   setState(0);
-  window.addEventListener("scroll", function () { request(); fit(); }, { passive: true });
+  window.addEventListener("scroll", request, { passive: true });
   window.addEventListener("resize", fit);
   fit();
 
