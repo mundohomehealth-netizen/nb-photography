@@ -211,7 +211,7 @@ p { margin: 0 0 1.1em; }
 }
 .hero > * { pointer-events: auto; }
 .hero__title {
-  font-family: var(--display); font-weight: 700; line-height: 1.1;
+  font-family: var(--display); font-weight: 400; line-height: 1.1;
   letter-spacing: -0.012em; color: var(--ink);
   /* The headroom is what is above the book's top edge, and that edge sits
      at 25.9% of a frame which is now 1.778 times the page's width - so the
@@ -221,10 +221,16 @@ p { margin: 0 0 1.1em; }
      The svh term still matters in landscape, where the frame is capped by
      the window's height instead. */
   font-size: clamp(.855rem, min(4.86vw, 2.79svh), 1.53rem);
-  margin: 0;                        /* the last thing in the block now */
+  margin: 0 0 .5rem;
   max-width: 28ch; margin-inline: auto;
   text-wrap: balance;
 }
+.hero__kicker {
+  margin: 0; font-size: clamp(.54rem, 2.7vw, .68rem); line-height: 1.4;
+  letter-spacing: .3em; text-transform: uppercase;
+  font-weight: 500; color: var(--sage);
+}
+
 .hero__scroll {
   position: absolute; z-index: 3; left: 0; right: 0; bottom: 4.5svh; margin: 0;
   text-align: center;
