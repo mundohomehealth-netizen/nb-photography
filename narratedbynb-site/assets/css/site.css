@@ -206,7 +206,17 @@ p { margin: 0 0 1.1em; }
   position: absolute; z-index: 3; pointer-events: none;
   opacity: var(--heroFade, 1); transition: opacity .25s linear;
   left: var(--gut); right: var(--gut);
-  top: calc(var(--head-h) + 1.5svh);
+  /* Centred in the band between the header and the top of the book,
+     rather than hung off the header. The book's top edge is at 25.9% of
+     the frame, and the frame is the stage - 1.7778 times the page width,
+     or the window height where that is smaller, which is the same min()
+     the stage itself uses. 25.9% of each of those is the pair below.
+
+     Halving the band and then pulling back by half the block's own height
+     is what centres it whatever the block turns out to be, so this holds
+     if the headline rewraps or a line is added or taken away. */
+  top: calc((var(--head-h) + min(46.05vw, 25.9svh)) / 2);
+  transform: translateY(-50%);
   text-align: center;
 }
 .hero > * { pointer-events: auto; }
