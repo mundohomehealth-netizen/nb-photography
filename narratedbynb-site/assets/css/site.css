@@ -132,6 +132,14 @@ p { margin: 0 0 1.1em; }
    album does not feel like six separate pages to get past. */
 .album {
   --stopH: 88svh;
+  /* The clip at the page's full width, capped by the window - the same
+     value the stage used to be sized to. The stage is the whole window
+     again so the hand-off into the page has somewhere to happen, which
+     means everything that belongs to the PICTURE has to be measured from
+     this rather than from the stage, or it drifts down into the strip
+     below the picture. On a wide screen the cap wins and this is just
+     100svh, which is what the frame is there. */
+  --frameH: min(177.78vw, 100svh);
   position: relative;
   height: calc(7 * var(--stopH));
   /* A phone taller than 9:16 leaves a little below the frame. It reads as
@@ -149,7 +157,7 @@ p { margin: 0 0 1.1em; }
    the first term always wins there. */
 .album__stage {
   position: sticky; top: 0; overflow: hidden;
-  height: min(calc(100vw * 1920 / 1080), 100svh);
+  height: 100svh;
 }
 .album__snaps { position: absolute; inset: 0; pointer-events: none; }
 .album__stop { display: block; height: var(--stopH); }
@@ -166,11 +174,26 @@ p { margin: 0 0 1.1em; }
    position, on every viewport - which a flat colour or a hand-matched
    gradient cannot do, because the top edge of these frames runs from cream
    on the left to deep shade on the right. */
-/* Both are off on a phone. They exist to fill the margin a 9:16 frame
-   leaves in a window that is not 9:16, and on a phone the stage now has
-   the frame's shape, so there is no margin and nothing to fill. The wide
-   layout still needs them. */
-.album__fill, .album__wash { display: none; }
+/* The wash stays off on a phone - it is a flat tint, and the moment the
+   frame ends it would show up as a step. The fill does not: it is the
+   frame itself, blurred, so it carries the frame's own colours across the
+   full width at exactly the point the frame stops.
+
+   That is what the hand-off into the page is made of now. The frame's
+   bottom row is around #C5B5A0 and the page is #F3F1EA, and dissolving one
+   straight into the other over 47px read as a line however smooth the
+   gradient was - too much tone to cross in too little distance. So the
+   frame dissolves into a blurred continuation of itself, which matches it
+   exactly, and that continuation fades to the page across the whole strip
+   below it: about 145px on a tall phone rather than 47. */
+.album__wash { display: none; }
+.album__fill {
+  /* opaque behind the frame, then out across everything below it */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0,
+                      #000 calc(var(--frameH) - 40px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0,
+              #000 calc(var(--frameH) - 40px), transparent 100%);
+}
 .album__fill {
   position: absolute; inset: 0; z-index: 0;
   width: 100%; height: 100%;
@@ -191,12 +214,11 @@ p { margin: 0 0 1.1em; }
   width: 100%;
   height: auto;
   top: 0;                           /* flush with the top of the page */
-  /* A page taller than 9:16 leaves a little below the frame, and the
-     frame's bottom row is a good deal warmer than the page is, so the join
-     showed as a line. The last few percent fade into it instead. That part
-     of every frame is surface and foliage, well below the book. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 93%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 93%, transparent 100%);
+  /* The last few percent dissolve into the blurred fill behind, which is
+     this same frame and so matches it tone for tone. The book's own bottom
+     edge is at 77%, so this only ever touches surface and foliage. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 92%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 92%, transparent 100%);
 }
 
 /* ----------------------------- the words ---------------------------- */
@@ -215,7 +237,7 @@ p { margin: 0 0 1.1em; }
      Halving the band and then pulling back by half the block's own height
      is what centres it whatever the block turns out to be, so this holds
      if the headline rewraps or a line is added or taken away. */
-  top: calc((var(--head-h) + min(46.05vw, 25.9svh)) / 2);
+  top: calc((var(--head-h) + var(--frameH) * 0.259) / 2);
   transform: translateY(-50%);
   text-align: center;
 }
@@ -242,7 +264,8 @@ p { margin: 0 0 1.1em; }
 }
 
 .hero__scroll {
-  position: absolute; z-index: 3; left: 0; right: 0; bottom: 4.5svh; margin: 0;
+  position: absolute; z-index: 3; left: 0; right: 0; margin: 0;
+  bottom: calc(100svh - var(--frameH) + 4.5svh);   /* off the picture, as above */
   text-align: center;
   font-size: .58rem; letter-spacing: .32em; text-transform: uppercase;
   font-weight: 400; color: rgba(24, 25, 23, .42);
@@ -267,7 +290,10 @@ p { margin: 0 0 1.1em; }
      seven stops, so the band under it is the last 23%. 9% puts the pair
      high in that band with about a line's gap under the book, rather than
      floating in the middle of it. */
-  bottom: 9%; text-align: center;
+  /* Measured up from the bottom of the PICTURE, not of the stage: the
+     stage now runs past the picture to carry the fade into the page. */
+  bottom: calc(100svh - var(--frameH) + var(--frameH) * 0.09);
+  text-align: center;
   display: grid; justify-items: center; gap: 10px;
   opacity: 0; pointer-events: none; transition: opacity .45s ease;
 }
@@ -289,8 +315,9 @@ p { margin: 0 0 1.1em; }
      shapes, so without it the edge reads as a step. */
   /* on :root, not on .album - the header itself is outside the album */
   :root { --head-h: 76px; }
-  .album__stage { height: 100svh; }
-  .album__fill, .album__wash { display: block; }
+  .album__wash { display: block; }
+  /* no mask here: the fill is carrying the whole width, not a strip */
+  .album__fill { -webkit-mask-image: none; mask-image: none; }
   .album__canvas {
     left: auto; right: 0; top: 0; transform: none;
     width: min(46vw, calc(100svh * 1080 / 1920));
