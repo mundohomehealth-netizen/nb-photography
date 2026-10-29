@@ -15,6 +15,10 @@
   --line: rgba(24, 25, 23, 0.14);
 
   --display: "Playfair Display", Georgia, serif;
+  /* The hero headline only. It echoes the script in the mark, and it is
+     deliberately not used anywhere else on the page - a whole site set in
+     it would be unreadable. */
+  --script: "Parisienne", "Snell Roundhand", "Brush Script MT", cursive;
   --sans: "Montserrat", "Segoe UI", system-ui, sans-serif;
 
   /* Only ever an overlay now - nothing sits behind it and nothing is laid
@@ -211,8 +215,16 @@ p { margin: 0 0 1.1em; }
 }
 .hero > * { pointer-events: auto; }
 .hero__title {
-  font-family: var(--display); font-weight: 700; line-height: 1.1;
-  letter-spacing: -0.012em; color: var(--ink);
+  /* A script needs its own metrics, not the serif's. The line-height is
+     opened up because the letters carry long ascenders and descenders that
+     would otherwise tangle between lines, and the tracking goes back to
+     zero - negative tracking pulls joined letterforms into each other.
+
+     The weight stays at 400 because Parisienne only has one. Asking a
+     script for bold gets a synthesised smear, which thickens the joins
+     until they close up. */
+  font-family: var(--script); font-weight: 400; line-height: 1.26;
+  letter-spacing: 0; color: var(--ink);
   /* The headroom is what is above the book's top edge, and that edge sits
      at 25.9% of a frame which is now 1.778 times the page's width - so the
      room scales with vw, and so does this. Measured clearance at 375x812 is
@@ -222,7 +234,11 @@ p { margin: 0 0 1.1em; }
      the window's height instead. */
   font-size: clamp(.95rem, min(5.4vw, 3.1svh), 1.7rem);
   margin: 0 0 .5rem;
-  max-width: 28ch; margin-inline: auto;
+  /* In em, not ch: a ch is the width of a zero, and in a joined script
+     that bears almost no relation to how wide the running text sets. This
+     holds the sentence to two lines, which is the shape the hero was
+     composed around. */
+  max-width: 11.5em; margin-inline: auto;
   text-wrap: balance;
 }
 .hero__kicker {
