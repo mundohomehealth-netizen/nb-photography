@@ -1,17 +1,26 @@
 /* ===================== NarratedByNB ===================== */
 :root {
   --charcoal: #181917;
-  --sage: #69705C;
+  /* Darkened from #69705C. The page is no longer near-white, and at the old
+     value this fell to 3.8:1 against it - under AA for the small caps and
+     button labels it is used on. 4.8:1 now. Same hue. */
+  --sage: #5A6150;
+  /* Light-on-dark only now: the footer, the lightbox, button labels on a
+     filled button. It is NOT the page any more - that is --paper. */
   --ivory: #F3F1EA;
   --stone: #B5AA98;
   --green: #2F3329;
 
-  /* The hero's surface is warmer and heavier than the page below it - the
-     reference's backdrop is closer to unbleached paper than to white. */
-  --sand: #EFE7DA;
-  --paper: var(--ivory);
+  /* The page is the hero's own surface. Measured off the clip: with the
+     book masked out, the lit surface sits between #E4D8C8 and #EBDECD
+     across the seven stops, and this is the middle of that. The whole page
+     is that colour now, so the hero is not a warm photograph pasted onto a
+     cold sheet, and the fade out of the frame has only a few units of tone
+     left to cross by the time it reaches the page. */
+  --paper: #E8DCCC;
   --ink: var(--charcoal);
-  --muted: #6d6a61;
+  /* likewise darkened from #6d6a61, which fell to 3.9:1 on the new page */
+  --muted: #5F5C54;
   --line: rgba(24, 25, 23, 0.14);
 
   --display: "Playfair Display", Georgia, serif;
@@ -338,12 +347,12 @@ p { margin: 0 0 1.1em; }
 .sec { padding: clamp(72px, 11vh, 150px) 0; }
 .sec__head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 36px; }
 
-.about { background: var(--ivory); }
+.about { background: var(--paper); }
 .about__in { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 90px); align-items: center; }
 .about__fig { margin: 0; }
 .about__fig img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
 
-.work { background: #efece3; }
+.work { background: var(--paper); }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(10px, 1.6vw, 20px); }
 .grid button {
   padding: 0; border: 0; background: none; cursor: pointer; display: block; overflow: hidden;
@@ -354,7 +363,7 @@ p { margin: 0 0 1.1em; }
 }
 .grid button:hover img { transform: scale(1.045); filter: brightness(1.05); }
 
-.contact { background: #efece3; }
+.contact { background: var(--paper); }
 .contact__in { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(32px, 6vw, 80px); }
 .contact__list { list-style: none; margin: 2em 0 0; padding: 0; display: grid; gap: .9em; font-size: .92rem; }
 .contact__list li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; border-top: 1px solid var(--line); padding-top: .9em; }
@@ -435,7 +444,7 @@ p { margin: 0 0 1.1em; }
 
   .nav {
     position: fixed; inset: var(--head-h) 0 auto 0; margin: 0;
-    background: var(--ivory); border-bottom: 1px solid var(--line);
+    background: var(--paper); border-bottom: 1px solid var(--line);
     flex-direction: column; gap: 0; padding: 8px var(--gut) 22px;
     transform: translateY(-12px); opacity: 0; visibility: hidden;
     transition: transform .3s, opacity .3s, visibility .3s;
@@ -443,7 +452,7 @@ p { margin: 0 0 1.1em; }
   .nav.is-open { transform: none; opacity: 1; visibility: visible; }
   .nav a { padding: 15px 0; border-bottom: 1px solid var(--line); font-size: .8rem; }
   .head__ig { order: 2; }
-  .head.menu-open { background: var(--ivory); }
+  .head.menu-open { background: var(--paper); }
 
   .grid { grid-template-columns: 1fr; }
   .lb__nav { width: 38px; height: 38px; }
@@ -465,7 +474,7 @@ p { margin: 0 0 1.1em; }
    is sized for a phone so the sequence still reads if the script never runs. */
 .boot {
   position: fixed; inset: 0; z-index: 400;
-  background: var(--sand);
+  background: var(--paper);
   animation: bootVeil 2.3s ease forwards;
 }
 .boot__logo {
